@@ -1,11 +1,8 @@
 package com.project.localbrew.dto.request;
 
-import com.project.localbrew.entity.VenueStatus;
 import com.project.localbrew.entity.VenueType;
 import jakarta.validation.constraints.*;
 import lombok.*;
-
-import java.util.UUID;
 
 @Getter
 @Setter

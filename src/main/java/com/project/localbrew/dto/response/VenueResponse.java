@@ -5,7 +5,6 @@ import com.project.localbrew.entity.VenueType;
 import lombok.*;
 
 import java.time.LocalDate;
-import java.util.UUID;
 
 @Getter
 @Setter

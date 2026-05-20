@@ -1,15 +1,16 @@
 package com.project.localbrew.service;
 
 import com.project.localbrew.entity.Drink;
+import com.project.localbrew.exception.DrinkNotFoundException;
 import com.project.localbrew.repository.DrinkRepository;
 import jakarta.transaction.Transactional;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
-import java.util.Optional;
 import java.util.UUID;
 
 @Service
+@Transactional
 public class DrinkServiceImpl implements DrinkService {
 
     private final DrinkRepository drinkRepository;
@@ -18,110 +19,172 @@ public class DrinkServiceImpl implements DrinkService {
         this.drinkRepository = drinkRepository;
     }
 
-    @Override
-    public List<Drink> findAllDrinks() {
-        return drinkRepository.findAll();
-    }
+    // =========================
+    // CREATE
+    // =========================
 
-    @Override
-    public Drink findDrinkById(UUID id) {
-
-        if (id == null) {
-            throw new IllegalArgumentException("ID non può essere null");
-        }
-
-        Optional<Drink> optDrink = drinkRepository.findById(id);
-
-        return optDrink.orElseThrow(() ->
-                new IllegalArgumentException("Drink non trovato con ID: " + id));
-    }
-
-    @Transactional
     @Override
     public Drink saveDrink(Drink drink) {
 
-        if (drink == null) {
-            throw new IllegalArgumentException("Drink non può essere null");
-        }
+        validateDrink(drink);
 
-        if (drink.getName() == null || drink.getName().isBlank()) {
-            throw new IllegalArgumentException("Il nome non può essere vuoto");
-        }
-
-        if (drink.getCategory() == null) {
-            throw new IllegalArgumentException("La categoria non può essere null");
-        }
-
-        if (drink.getAbv() != null &&
-                (drink.getAbv() < 0 || drink.getAbv() > 100)) {
-            throw new IllegalArgumentException("ABV deve essere tra 0 e 100");
+        if (drink.getId() != null) {
+            throw new IllegalArgumentException(
+                    "Un nuovo drink non deve avere ID");
         }
 
         return drinkRepository.save(drink);
     }
 
-    @Transactional
+    // =========================
+    // READ
+    // =========================
+
+    @Transactional(Transactional.TxType.SUPPORTS)
     @Override
-    public Drink updateDrinkById(Drink drink, UUID id) {
+    public List<Drink> findAllDrinks() {
+        return drinkRepository.findAll();
+    }
 
-        if (id == null) {
-            throw new IllegalArgumentException("ID non può essere null");
-        }
+    @Transactional(Transactional.TxType.SUPPORTS)
+    @Override
+    public Drink findDrinkById(UUID id) {
 
-        if (drink == null) {
-            throw new IllegalArgumentException("Drink non può essere null");
+        validateId(id);
+
+        return drinkRepository.findById(id)
+                .orElseThrow(() -> new DrinkNotFoundException(id));
+    }
+
+    // =========================
+    // UPDATE
+    // =========================
+
+    @Override
+    public Drink updateDrinkById(UUID id, Drink updatedDrink) {
+
+        validateId(id);
+
+        if (updatedDrink == null) {
+            throw new IllegalArgumentException(
+                    "Drink non può essere null");
         }
 
         Drink existingDrink = drinkRepository.findById(id)
-                .orElseThrow(() -> new IllegalArgumentException("Drink non trovato con ID: " + id));
+                .orElseThrow(() -> new DrinkNotFoundException(id));
 
-        if (drink.getName() != null && !drink.getName().isBlank()) {
-            existingDrink.setName(drink.getName());
-        }
-
-        if (drink.getDescription() != null && !drink.getDescription().isBlank()) {
-            existingDrink.setDescription(drink.getDescription());
-        }
-
-        if (drink.getCategory() != null) {
-            existingDrink.setCategory(drink.getCategory());
-        }
-
-        if (drink.getAbv() != null) {
-
-            if (drink.getAbv() < 0 || drink.getAbv() > 100) {
-                throw new IllegalArgumentException("ABV deve essere tra 0 e 100");
-            }
-
-            existingDrink.setAbv(drink.getAbv());
-        }
-
-        if (drink.getOrigin() != null && !drink.getOrigin().isBlank()) {
-            existingDrink.setOrigin(drink.getOrigin());
-        }
+        updateFields(existingDrink, updatedDrink);
 
         return drinkRepository.save(existingDrink);
     }
 
+    // =========================
+    // DELETE
+    // =========================
+
     @Override
     public void deleteDrinkById(UUID id) {
 
-        if (id == null) {
-            throw new IllegalArgumentException("ID non può essere null");
+        validateId(id);
+
+        if (!drinkRepository.existsById(id)) {
+            throw new DrinkNotFoundException(id);
         }
 
-        Drink drinkToDelete = drinkRepository.findById(id)
-                .orElseThrow(() -> new IllegalArgumentException("Drink non trovato con ID: " + id));
-
-        drinkRepository.delete(drinkToDelete);
+        drinkRepository.deleteById(id);
     }
 
+    // =========================
+    // SEARCH
+    // =========================
+
+    @Transactional(Transactional.TxType.SUPPORTS)
     @Override
     public List<Drink> searchDrinksByName(String name) {
 
         if (name == null || name.isBlank()) {
-            throw new IllegalArgumentException("Nome non può essere vuoto");
+            throw new IllegalArgumentException(
+                    "Il nome non può essere vuoto");
         }
+
         return drinkRepository.findByNameContainingIgnoreCase(name);
+    }
+
+    // =========================
+    // PRIVATE METHODS
+    // =========================
+
+    private void validateDrink(Drink drink) {
+
+        if (drink == null) {
+            throw new IllegalArgumentException(
+                    "Drink non può essere null");
+        }
+
+        if (drink.getName() == null ||
+                drink.getName().isBlank()) {
+
+            throw new IllegalArgumentException(
+                    "Il nome non può essere vuoto");
+        }
+
+        if (drink.getCategory() == null) {
+            throw new IllegalArgumentException(
+                    "La categoria non può essere null");
+        }
+
+        validateAbv(drink.getAbv());
+    }
+
+    private void validateAbv(Double abv) {
+
+        if (abv != null && (abv < 0 || abv > 100)) {
+
+            throw new IllegalArgumentException(
+                    "ABV deve essere tra 0 e 100");
+        }
+    }
+
+    private void validateId(UUID id) {
+
+        if (id == null) {
+            throw new IllegalArgumentException(
+                    "ID non può essere null");
+        }
+    }
+
+    private void updateFields(Drink existingDrink,
+                              Drink updatedDrink) {
+
+        if (updatedDrink.getName() != null &&
+                !updatedDrink.getName().isBlank()) {
+
+            existingDrink.setName(updatedDrink.getName());
+        }
+
+        if (updatedDrink.getDescription() != null &&
+                !updatedDrink.getDescription().isBlank()) {
+
+            existingDrink.setDescription(
+                    updatedDrink.getDescription());
+        }
+
+        if (updatedDrink.getCategory() != null) {
+            existingDrink.setCategory(
+                    updatedDrink.getCategory());
+        }
+
+        if (updatedDrink.getAbv() != null) {
+
+            validateAbv(updatedDrink.getAbv());
+
+            existingDrink.setAbv(updatedDrink.getAbv());
+        }
+
+        if (updatedDrink.getOrigin() != null &&
+                !updatedDrink.getOrigin().isBlank()) {
+
+            existingDrink.setOrigin(updatedDrink.getOrigin());
+        }
     }
 }

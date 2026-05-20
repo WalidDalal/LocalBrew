@@ -7,15 +7,18 @@ import java.util.UUID;
 
 public interface DrinkService {
 
-    // CRUD
+    // Create
+    Drink saveDrink(Drink drink);
+
+    // Read
     List<Drink> findAllDrinks();
 
     Drink findDrinkById(UUID id);
 
-    Drink saveDrink(Drink drink);
+    // Update
+    Drink updateDrinkById(UUID id, Drink drink);
 
-    Drink updateDrinkById(Drink drink, UUID id);
-
+    // Delete
     void deleteDrinkById(UUID id);
 
     // Utility

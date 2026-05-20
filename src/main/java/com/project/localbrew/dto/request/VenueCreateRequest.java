@@ -1,5 +1,7 @@
 package com.project.localbrew.dto.request;
 
+import com.project.localbrew.entity.VenueStatus;
+import com.project.localbrew.entity.VenueType;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Size;
@@ -10,7 +12,7 @@ import lombok.*;
 @NoArgsConstructor
 @AllArgsConstructor
 @Builder
-public class VenueRequest {
+public class VenueCreateRequest {
     @NotBlank
     @Size(max = 50)
     private String name;
@@ -29,8 +31,8 @@ public class VenueRequest {
     private Double longitude;
 
     @NotNull
-    private String type;
+    private VenueType type;
 
     @NotNull
-    private String status;
+    private VenueStatus status;
 }

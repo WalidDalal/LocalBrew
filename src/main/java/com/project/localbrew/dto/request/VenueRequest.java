@@ -12,7 +12,7 @@ import java.util.UUID;
 @NoArgsConstructor
 @AllArgsConstructor
 @Builder
-public class VenueCreateRequest {
+public class VenueRequest {
     @NotBlank(message = "Il nome è obbligatorio")
     @Size(max = 50, message = "Il nome non può superare 50 caratteri")
     private String name;
@@ -24,22 +24,7 @@ public class VenueCreateRequest {
     @Size(max = 70, message = "L'indirizzo non può superare 70 caratteri")
     private String address;
 
-    @NotNull(message = "La latitudine è obbligatoria")
-    @DecimalMin(value = "-90.0", message = "Latitudine minima -90")
-    @DecimalMax(value = "90.0", message = "Latitudine massima 90")
-    private Double latitude;
-
-    @NotNull(message = "La longitudine è obbligatoria")
-    @DecimalMin(value = "-180.0", message = "Longitudine minima -180")
-    @DecimalMax(value = "180.0", message = "Longitudine massima 180")
-    private Double longitude;
-
     @NotNull(message = "Il tipo è obbligatorio")
     private VenueType type;
 
-    @NotNull(message = "Il tipo è obbligatorio")
-    private VenueStatus status;
-
-    @NotNull(message = "Owner ID obbligatorio")
-    private UUID ownerId;
 }

@@ -14,7 +14,5 @@ public interface FavoriteDrinkService {
 
     FavoriteDrink updateFavoriteDrinkById(FavoriteDrink favoriteDrink, UUID id);
 
-    FavoriteDrink replaceFavoriteDrinkById(FavoriteDrink favoriteDrink, UUID id);
-
     void deleteFavoriteDrinkById(UUID id);
 }

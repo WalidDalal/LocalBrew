@@ -15,7 +15,7 @@ public class DrinkRequest {
     @Size(max = 100, message = "Nome massimo 100 caratteri")
     private String name;
 
-    @Size(max = 2000, message = "Descrizione troppo lunga")
+    @Size(max = 300, message = "Descrizione troppo lunga")
     private String description;
 
     @NotNull(message = "Categoria obbligatoria")

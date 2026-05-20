@@ -12,18 +12,18 @@ import lombok.*;
 @Builder
 public class RegisterRequest {
     
-    @NotBlank(message = "Username è obbligatorio")
+    @NotBlank(message = "Lo Username è obbligatorio")
     @Size(min = 3, max = 50, message = "Username deve essere tra 3 e 50 caratteri")
     private String username;
     
-    @NotBlank(message = "Email è obbligatoria")
-    @Email(message = "Email deve essere valida")
+    @NotBlank(message = "L'Email è obbligatoria")
+    @Email(message = "L'Email deve essere valida")
     private String email;
     
-    @NotBlank(message = "Password è obbligatoria")
-    @Size(min = 8, message = "Password deve essere almeno 8 caratteri")
+    @NotBlank(message = "La Password è obbligatoria")
+    @Size(min = 8, message = "La Password deve essere almeno 8 caratteri")
     private String password;
     
-    @NotBlank(message = "Conferma password è obbligatoria")
+    @NotBlank(message = "La Conferma della password è obbligatoria")
     private String confirmPassword;
 }

@@ -9,7 +9,10 @@ public interface UserService {
 	// CRUD
 	List<User> findAllUsers();
 	User findUserById(UUID id);
-	User saveUser(User user);
+
+	User findByEmail(String email);
+
+    User saveUser(User user);
 	User updateUserById(User user, UUID id);
 	void deleteUserById(UUID id);
 	

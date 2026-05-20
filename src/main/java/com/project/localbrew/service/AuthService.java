@@ -1,27 +1,25 @@
 package com.project.localbrew.service;
 
-import com.project.localbrew.entity.User;
+import com.project.localbrew.dto.request.LoginRequest;
+import com.project.localbrew.dto.request.RegisterRequest;
+import com.project.localbrew.dto.response.AuthResponse;
 
 public interface AuthService {
-    
-    // Registrazione
-    User register(String username, String email, String rawPassword);
-    
-    // Login
-    User login(String email, String rawPassword);
-    
-    // Validazione password
-    boolean isValidPassword(String rawPassword, String hashedPassword);
-    
-    // Encoding password
+
+    AuthResponse register(RegisterRequest request);
+
+    AuthResponse login(LoginRequest request);
+
+    boolean isValidPassword(
+            String rawPassword,
+            String hashedPassword
+    );
+
     String encodePassword(String rawPassword);
-    
-    // Validazione email
+
     boolean isValidEmail(String email);
-    
-    // Verifica unicità username
+
     boolean isUsernameAvailable(String username);
-    
-    // Verifica unicità email
+
     boolean isEmailAvailable(String email);
 }

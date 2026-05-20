@@ -8,8 +8,15 @@ import lombok.*;
 @AllArgsConstructor
 @Builder
 public class AuthResponse {
-    
+
     private UserResponse user;
+
+    // JWT token
+    private String token;
+
+    // Messaggio di risposta
     private String message;
+
+    // Stato operazione
     private boolean success;
 }

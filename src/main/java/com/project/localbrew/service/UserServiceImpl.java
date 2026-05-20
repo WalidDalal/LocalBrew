@@ -31,7 +31,16 @@ public class UserServiceImpl implements UserService {
         Optional<User> optUser = userRepository.findById(id);
         return optUser.orElseThrow(() -> new IllegalArgumentException("Utente non trovato con ID: " + id));
     }
+    @Override
+    public User findByEmail(String email) {
 
+        return userRepository.findByEmail(email)
+                .orElseThrow(() ->
+                        new IllegalArgumentException(
+                                "Utente non trovato"
+                        )
+                );
+    }
     @Transactional
     @Override
     public User saveUser(User user) {

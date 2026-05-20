@@ -1,6 +1,6 @@
 package com.project.localbrew.entity;
 
-public enum StatusVenue {
+public enum VenueStatus {
 	PENDING,
 	ACTIVE,
 	SUSPENDED

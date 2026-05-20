@@ -14,7 +14,5 @@ public interface DrinkRatingService {
 
     DrinkRating updateDrinkRatingById(DrinkRating drinkRating, UUID id);
 
-    DrinkRating replaceDrinkRatingById(DrinkRating drinkRating, UUID id);
-
     void deleteDrinkRatingById(UUID id);
 }

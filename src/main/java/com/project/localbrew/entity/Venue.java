@@ -22,10 +22,10 @@ public class Venue {
     private String name;
 
     @Column(length = 500)
-    private String desription;
+    private String description;
 
     @Column(nullable = false, length = 70)
-    private String adress;
+    private String address;
 
     @Column(nullable = false)
     private Double latitude;
@@ -39,7 +39,7 @@ public class Venue {
 
     @Column(nullable = false)
     @Enumerated(EnumType.STRING)
-    private StatusVenue status;
+    private VenueStatus status;
 
     @Column(nullable = false, name = "created_at")
     private LocalDate createdAt;

@@ -29,9 +29,20 @@ public class DrinkRatingServiceImpl implements DrinkRatingService {
     }
 
     @Override
+    @Transactional
     public DrinkRating saveDrinkRating(DrinkRating drinkRating) {
         if (drinkRating == null) {
             throw new IllegalArgumentException("DrinkRating nullo");
+        }
+
+        drinkRepository.findById(drinkRating.getDrink().getId())
+                .orElseThrow(() -> new EntityNotFoundException("Drink non trovato"));
+
+        // controllo che non ci sia già questa coppia di id sul DB
+        boolean exists = drinkRatingRepository.existsByUserIdAndDrinkId(drinkRating.getUser().getId(), drinkRating.getDrink().getId());
+
+        if (exists) {
+            throw new IllegalArgumentException("Hai già valutato questo drink");
         }
 
         return drinkRatingRepository.save(drinkRating);
@@ -45,7 +56,7 @@ public class DrinkRatingServiceImpl implements DrinkRatingService {
     @Override
     public DrinkRating findDrinkRatingById(UUID id) {
         return drinkRatingRepository.findById(id).
-                orElseThrow(() -> new EntityNotFoundException("DrinkRating non trovato con id: " + id));
+                orElseThrow(() -> new EntityNotFoundException("DrinkRating non trovato con ID: " + id));
     }
 
     @Override
@@ -55,71 +66,37 @@ public class DrinkRatingServiceImpl implements DrinkRatingService {
             throw new IllegalArgumentException("DrinkRating nullo");
         }
         if (id == null) {
-            throw new IllegalArgumentException("Id nullo");
+            throw new IllegalArgumentException("ID nullo");
         }
 
-        DrinkRating savedDrinkRating = drinkRatingRepository.findById(id)
-                .orElseThrow(() -> new EntityNotFoundException("DrankRating non trovato con id: " + id));
-
-        if (drinkRating.getUser() != null) {
-            User user = findUserInsideDrinkRating(drinkRating);
-            savedDrinkRating.setUser(user);
-        }
-
-        if (drinkRating.getDrink() != null) {
-            Drink drink = findDrinkInsideDrinkRating(drinkRating);
-            savedDrinkRating.setDrink(drink);
-        }
+        DrinkRating existing = drinkRatingRepository.findById(id)
+                .orElseThrow(() -> new EntityNotFoundException("DrinkRating non trovato con ID: " + id));
 
         if (drinkRating.getRating() != null) {
-            savedDrinkRating.setRating(drinkRating.getRating());
+            existing.setRating(drinkRating.getRating());
         }
 
-        return drinkRatingRepository.save(savedDrinkRating);
-    }
-
-    @Override
-    @Transactional
-    public DrinkRating replaceDrinkRatingById(DrinkRating drinkRating, UUID id) {
-        if (drinkRating == null) {
-            throw new IllegalArgumentException("DrinkRating nullo");
-        }
-
-        if (id == null) {
-            throw new IllegalArgumentException("Id nullo");
-        }
-
-        DrinkRating savedDrinkRating = drinkRatingRepository.findById(drinkRating.getId()).orElseThrow(() -> new EntityNotFoundException("DrinkRating non trovato con id: " + id));
-
-
-        User user = findUserInsideDrinkRating(drinkRating);
-        Drink drink = findDrinkInsideDrinkRating(drinkRating);
-
-        savedDrinkRating.setUser(user);
-        savedDrinkRating.setDrink(drink);
-        savedDrinkRating.setRating(drinkRating.getRating());
-
-        return drinkRatingRepository.save(savedDrinkRating);
+        return drinkRatingRepository.save(existing);
     }
 
     @Override
     @Transactional
     public void deleteDrinkRatingById(UUID id) {
         if (id == null) {
-            throw new IllegalArgumentException("Id nullo");
+            throw new IllegalArgumentException("ID nullo");
         }
 
         DrinkRating savedDrinkRating = drinkRatingRepository.findById(id)
-                .orElseThrow(() -> new EntityNotFoundException("DrinkRating non trovato con id: " + id));
+                .orElseThrow(() -> new EntityNotFoundException("DrinkRating non trovato con ID: " + id));
 
         drinkRatingRepository.delete(savedDrinkRating);
     }
 
     private Drink findDrinkInsideDrinkRating(DrinkRating drinkRating) {
-        return drinkRepository.findById(drinkRating.getDrink().getId()).orElseThrow(() -> new EntityNotFoundException("DrinkRating non trovato con id: " + drinkRating.getDrink().getId()));
+        return drinkRepository.findById(drinkRating.getDrink().getId()).orElseThrow(() -> new EntityNotFoundException("DrinkRating non trovato con ID: " + drinkRating.getDrink().getId()));
     }
 
     private User findUserInsideDrinkRating(DrinkRating drinkRating) {
-        return userRepository.findById(drinkRating.getUser().getId()).orElseThrow(() -> new EntityNotFoundException("DrinkRating non trovato con id: " + drinkRating.getUser().getId()));
+        return userRepository.findById(drinkRating.getUser().getId()).orElseThrow(() -> new EntityNotFoundException("DrinkRating non trovato con ID: " + drinkRating.getUser().getId()));
     }
 }

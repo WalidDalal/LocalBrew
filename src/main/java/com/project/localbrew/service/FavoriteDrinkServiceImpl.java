@@ -27,10 +27,22 @@ public class FavoriteDrinkServiceImpl implements FavoriteDrinkService {
 
 
     @Override
+    @Transactional
     public FavoriteDrink saveFavoriteDrink(FavoriteDrink favoriteDrink) {
         if (favoriteDrink == null) {
             throw new IllegalArgumentException("FavoriteDrink nullo");
         }
+
+        // controllo che non ci sia già questa coppia di id sul DB
+        drinkRepository.findById(favoriteDrink.getDrink().getId())
+                .orElseThrow(() -> new EntityNotFoundException("Drink non trovato"));
+
+        boolean exists = favoriteDrinkRepository.existsByUserIdAndDrinkId(favoriteDrink.getUser().getId(), favoriteDrink.getDrink().getId());
+
+        if (exists) {
+            throw new IllegalArgumentException("Hai già aggiunto ai preferiti questo drink");
+        }
+
         return favoriteDrinkRepository.save(favoriteDrink);
     }
 
@@ -74,11 +86,6 @@ public class FavoriteDrinkServiceImpl implements FavoriteDrinkService {
         }
 
         return favoriteDrinkRepository.save(savedFavoriteDrink);
-    }
-
-    @Override
-    public FavoriteDrink replaceFavoriteDrinkById(FavoriteDrink favoriteDrink, UUID id) {
-        return null;
     }
 
     @Override

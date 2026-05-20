@@ -1,5 +1,7 @@
 package com.project.localbrew.dto.response;
 
+import com.project.localbrew.entity.VenueStatus;
+import com.project.localbrew.entity.VenueType;
 import lombok.*;
 
 import java.time.LocalDate;
@@ -17,8 +19,8 @@ public class VenueResponse {
     private String address;
     private Double latitude;
     private Double longitude;
-    private String type;
-    private String status;
+    private VenueType type;
+    private VenueStatus status;
     private LocalDate createdAt;
     private UUID ownerId;
 

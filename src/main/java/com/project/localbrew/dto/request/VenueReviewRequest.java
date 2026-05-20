@@ -1,9 +1,10 @@
 package com.project.localbrew.dto.request;
 
-import jakarta.validation.constraints.*;
+import jakarta.validation.constraints.Max;
+import jakarta.validation.constraints.Min;
+import jakarta.validation.constraints.NotNull;
+import jakarta.validation.constraints.Size;
 import lombok.*;
-
-import java.util.UUID;
 
 @Getter
 @Setter
@@ -19,7 +20,4 @@ public class VenueReviewRequest {
 
     @Size(max = 500, message = "Commento massimo 500 caratteri")
     private String comment;
-
-    @NotNull(message = "Venue ID obbligatorio")
-    private UUID venueId;
 }

@@ -8,6 +8,7 @@ import com.project.localbrew.repository.VenueRepository;
 import jakarta.persistence.EntityNotFoundException;
 import jakarta.transaction.Transactional;
 
+import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
@@ -44,6 +45,7 @@ public class VenueServiceImpl implements VenueService {
         }
 
         venue.setStatus(VenueStatus.PENDING);
+        venue.setCreatedAt(LocalDateTime.now());
 
         return venueRepository.save(venue);
     }

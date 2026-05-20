@@ -13,7 +13,6 @@ import java.util.UUID;
 @AllArgsConstructor
 @Builder
 public class VenueResponse {
-    private UUID id;
     private String name;
     private String description;
     private String address;
@@ -23,6 +22,5 @@ public class VenueResponse {
     private VenueStatus status;
     private LocalDate createdAt;
 
-    private UUID ownerId;
     private String ownerUsername;
 }

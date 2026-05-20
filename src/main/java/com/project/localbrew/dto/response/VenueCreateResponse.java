@@ -12,7 +12,7 @@ import java.util.UUID;
 @NoArgsConstructor
 @AllArgsConstructor
 @Builder
-public class VenueResponse {
+public class VenueCreateResponse {
     private UUID id;
     private String name;
     private String description;
@@ -22,7 +22,7 @@ public class VenueResponse {
     private VenueType type;
     private VenueStatus status;
     private LocalDate createdAt;
-    private UUID ownerId;
 
+    private UUID ownerId;
     private String ownerUsername;
 }

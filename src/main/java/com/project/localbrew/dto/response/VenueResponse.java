@@ -21,5 +21,6 @@ public class VenueResponse {
     private String status;
     private LocalDate createdAt;
     private UUID ownerId;
+
     private String ownerUsername;
 }

@@ -11,9 +11,7 @@ public class CurrentUserService {
 
     private final UserService userService;
 
-    public CurrentUserService(
-            UserService userService
-    ) {
+    public CurrentUserService(UserService userService) {
         this.userService = userService;
     }
 

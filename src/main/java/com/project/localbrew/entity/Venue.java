@@ -3,7 +3,7 @@ package com.project.localbrew.entity;
 import jakarta.persistence.*;
 import lombok.*;
 
-import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.util.UUID;
 
 @Getter
@@ -37,14 +37,17 @@ public class Venue {
     @Enumerated(EnumType.STRING)
     private VenueType type;
 
+    @Column(name = "image_uri")
+    private String imageUri;
+
     @Column(nullable = false)
     @Enumerated(EnumType.STRING)
     private VenueStatus status;
 
     @Column(nullable = false, name = "created_at")
-    private LocalDate createdAt;
+    private LocalDateTime createdAt;
 
     @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "user_id")
+    @JoinColumn(name = "owner_id", nullable = false)
     private User owner;
 }

@@ -31,4 +31,7 @@ public class Drink {
     private Double abv; // DTO validation (0-100)
 
     private String origin;
+
+    @Column(name = "image_uri")
+    private String imageUri;
 }

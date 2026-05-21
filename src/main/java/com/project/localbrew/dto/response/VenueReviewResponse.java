@@ -2,7 +2,7 @@ package com.project.localbrew.dto.response;
 
 import lombok.*;
 
-import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.util.UUID;
 
 @Getter
@@ -18,11 +18,9 @@ public class VenueReviewResponse {
 
     private String comment;
 
-    private LocalDate createdAt;
-
-    private UUID userId;
+    private LocalDateTime createdAt;
 
     private String username;
 
-    private UUID venueId;
+    private String venueName;
 }

@@ -5,6 +5,7 @@ import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.security.config.Customizer;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
+import org.springframework.security.config.annotation.web.configurers.AbstractHttpConfigurer;
 import org.springframework.security.config.http.SessionCreationPolicy;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
@@ -26,25 +27,46 @@ public class SecurityConfig {
     }
 
     @Bean
-    public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
-        // Disabilita CSRF
-        http.csrf(csrf -> csrf.disable())
-                // JWT = stateless
-                .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
-                // Permessi endpoint
+    public SecurityFilterChain securityFilterChain(
+            HttpSecurity http
+    ) {
+
+        http
+                .csrf(AbstractHttpConfigurer::disable)
+
+                .sessionManagement(session ->
+                        session.sessionCreationPolicy(
+                                SessionCreationPolicy.STATELESS
+                        )
+                )
+
                 .authorizeHttpRequests(auth -> auth
-                        // Endpoint pubblici
-                        .requestMatchers("/api/auth/**", "/api/map/**", "/api/breweries/public/**").permitAll()
-                        // Solo ADMIN
-                        .requestMatchers("/api/admin/**").hasRole("ADMIN")
-                        // Solo OWNER
-                        .requestMatchers("/api/owner/**").hasRole("OWNER")
-                        // Qualsiasi altra request richiede login
-                        .anyRequest().authenticated())
-                // JWT Filter
-                .addFilterBefore(jwtAuthFilter, UsernamePasswordAuthenticationFilter.class)
-                // Basic config
+
+                        .requestMatchers(
+                                "/api/auth/**",
+                                "/api/map/**",
+                                "/api/breweries/public/**",
+                                "/api/venues/**"
+                        ).permitAll()
+
+                        .requestMatchers(
+                                "/api/admin/**"
+                        ).hasRole("ADMIN")
+
+                        .requestMatchers(
+                                "/api/owner/**"
+                        ).hasRole("OWNER")
+
+                        .anyRequest().authenticated()
+                )
+
+                .addFilterBefore(
+                        jwtAuthFilter,
+                        UsernamePasswordAuthenticationFilter.class
+                )
+
                 .httpBasic(Customizer.withDefaults());
+
         return http.build();
     }
 }

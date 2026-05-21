@@ -3,6 +3,7 @@ package com.project.localbrew.service;
 import java.util.List;
 import java.util.UUID;
 
+import com.project.localbrew.entity.Drink;
 import com.project.localbrew.entity.Venue;
 import com.project.localbrew.entity.VenueStatus;
 
@@ -17,4 +18,5 @@ public interface VenueService {
 	Venue updateVenueStatus(UUID id, VenueStatus status);
 	Venue activateVenue(UUID id);
 	Venue suspendVenue(UUID id);
+	List<Drink> findAllDrinksByVenueId(UUID venueId);
 }

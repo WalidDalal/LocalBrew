@@ -24,4 +24,13 @@ public class VenueRequest {
     @NotNull(message = "Il tipo è obbligatorio")
     private VenueType type;
 
+    @NotNull(message = "La latitudine è obbligatoria")
+    @DecimalMin(value = "-90.0", message = "Latitudine minima -90")
+    @DecimalMax(value = "90.0", message = "Latitudine massima 90")
+    private Double latitude;
+
+    @NotNull(message = "La longitudine è obbligatoria")
+    @DecimalMin(value = "-180.0", message = "Longitudine minima -180")
+    @DecimalMax(value = "180.0", message = "Longitudine massima 180")
+    private Double longitude;
 }

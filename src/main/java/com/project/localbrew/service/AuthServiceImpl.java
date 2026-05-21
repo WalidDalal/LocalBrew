@@ -156,10 +156,7 @@ public class AuthServiceImpl implements AuthService {
     }
 
     @Override
-    public boolean isValidPassword(
-            String rawPassword,
-            String hashedPassword
-    ) {
+    public boolean isValidPassword(String rawPassword, String hashedPassword) {
 
         if (rawPassword == null || hashedPassword == null) {
             return false;
@@ -172,9 +169,7 @@ public class AuthServiceImpl implements AuthService {
     public String encodePassword(String rawPassword) {
 
         if (rawPassword == null || rawPassword.isBlank()) {
-            throw new IllegalArgumentException(
-                    "Password non può essere vuota"
-            );
+            throw new IllegalArgumentException("Password non può essere vuota");
         }
 
         return passwordEncoder.encode(rawPassword);

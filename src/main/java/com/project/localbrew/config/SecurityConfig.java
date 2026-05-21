@@ -16,68 +16,35 @@ public class SecurityConfig {
 
     private final JwtAuthenticationFilter jwtAuthFilter;
 
-    public SecurityConfig(
-            JwtAuthenticationFilter jwtAuthFilter
-    ) {
+    public SecurityConfig(JwtAuthenticationFilter jwtAuthFilter) {
         this.jwtAuthFilter = jwtAuthFilter;
     }
 
     @Bean
     public PasswordEncoder passwordEncoder() {
-
         return new BCryptPasswordEncoder();
     }
 
     @Bean
-    public SecurityFilterChain securityFilterChain(
-            HttpSecurity http
-    ) throws Exception {
-
-        http
-
-                // Disabilita CSRF
-                .csrf(csrf -> csrf.disable())
-
+    public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
+        // Disabilita CSRF
+        http.csrf(csrf -> csrf.disable())
                 // JWT = stateless
-                .sessionManagement(session ->
-                        session.sessionCreationPolicy(
-                                SessionCreationPolicy.STATELESS
-                        )
-                )
-
+                .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
                 // Permessi endpoint
                 .authorizeHttpRequests(auth -> auth
-
                         // Endpoint pubblici
-                        .requestMatchers(
-                                "/api/auth/**",
-                                "/api/map/**",
-                                "/api/breweries/public/**"
-                        ).permitAll()
-
+                        .requestMatchers("/api/auth/**", "/api/map/**", "/api/breweries/public/**").permitAll()
                         // Solo ADMIN
-                        .requestMatchers(
-                                "/api/admin/**"
-                        ).hasRole("ADMIN")
-
+                        .requestMatchers("/api/admin/**").hasRole("ADMIN")
                         // Solo OWNER
-                        .requestMatchers(
-                                "/api/owner/**"
-                        ).hasRole("OWNER")
-
+                        .requestMatchers("/api/owner/**").hasRole("OWNER")
                         // Qualsiasi altra request richiede login
-                        .anyRequest().authenticated()
-                )
-
+                        .anyRequest().authenticated())
                 // JWT Filter
-                .addFilterBefore(
-                        jwtAuthFilter,
-                        UsernamePasswordAuthenticationFilter.class
-                )
-
+                .addFilterBefore(jwtAuthFilter, UsernamePasswordAuthenticationFilter.class)
                 // Basic config
                 .httpBasic(Customizer.withDefaults());
-
         return http.build();
     }
 }

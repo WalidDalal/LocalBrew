@@ -13,6 +13,7 @@ import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
 
+@Service
 public class VenueServiceImpl implements VenueService {
     private final VenueRepository venueRepository;
     private final UserRepository userRepository;

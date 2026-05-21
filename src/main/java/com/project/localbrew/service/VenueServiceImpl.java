@@ -87,8 +87,8 @@ public class VenueServiceImpl implements VenueService {
                 currentUserService.getCurrentUser();
 
         // Solo OWNER può creare venue
-        if (currentUser.getRole().name()
-                .equals("OWNER") == false) {
+        if (!currentUser.getRole().name()
+                .equals("OWNER")) {
 
             throw new IllegalArgumentException(
                     "Solo gli OWNER possono creare venue"

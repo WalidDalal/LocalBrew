@@ -29,8 +29,7 @@ public class DrinkServiceImpl implements DrinkService {
         validateDrink(drink);
 
         if (drink.getId() != null) {
-            throw new IllegalArgumentException(
-                    "Un nuovo drink non deve avere ID");
+            throw new IllegalArgumentException("Un nuovo drink non deve avere ID");
         }
 
         return drinkRepository.save(drink);
@@ -66,8 +65,7 @@ public class DrinkServiceImpl implements DrinkService {
         validateId(id);
 
         if (updatedDrink == null) {
-            throw new IllegalArgumentException(
-                    "Drink non può essere null");
+            throw new IllegalArgumentException("Drink non può essere null");
         }
 
         Drink existingDrink = drinkRepository.findById(id)
@@ -103,8 +101,7 @@ public class DrinkServiceImpl implements DrinkService {
     public List<Drink> searchDrinksByName(String name) {
 
         if (name == null || name.isBlank()) {
-            throw new IllegalArgumentException(
-                    "Il nome non può essere vuoto");
+            throw new IllegalArgumentException("Il nome non può essere vuoto");
         }
 
         return drinkRepository.findByNameContainingIgnoreCase(name);
@@ -117,20 +114,17 @@ public class DrinkServiceImpl implements DrinkService {
     private void validateDrink(Drink drink) {
 
         if (drink == null) {
-            throw new IllegalArgumentException(
-                    "Drink non può essere null");
+            throw new IllegalArgumentException("Drink non può essere null");
         }
 
         if (drink.getName() == null ||
                 drink.getName().isBlank()) {
 
-            throw new IllegalArgumentException(
-                    "Il nome non può essere vuoto");
+            throw new IllegalArgumentException("Il nome non può essere vuoto");
         }
 
         if (drink.getCategory() == null) {
-            throw new IllegalArgumentException(
-                    "La categoria non può essere null");
+            throw new IllegalArgumentException("La categoria non può essere null");
         }
 
         validateAbv(drink.getAbv());
@@ -140,50 +134,38 @@ public class DrinkServiceImpl implements DrinkService {
 
         if (abv != null && (abv < 0 || abv > 100)) {
 
-            throw new IllegalArgumentException(
-                    "ABV deve essere tra 0 e 100");
+            throw new IllegalArgumentException("ABV deve essere tra 0 e 100");
         }
     }
 
     private void validateId(UUID id) {
 
         if (id == null) {
-            throw new IllegalArgumentException(
-                    "ID non può essere null");
+            throw new IllegalArgumentException("ID non può essere null");
         }
     }
 
-    private void updateFields(Drink existingDrink,
-                              Drink updatedDrink) {
+    private void updateFields(Drink existingDrink, Drink updatedDrink) {
 
-        if (updatedDrink.getName() != null &&
-                !updatedDrink.getName().isBlank()) {
-
+        if (updatedDrink.getName() != null && !updatedDrink.getName().isBlank()) {
             existingDrink.setName(updatedDrink.getName());
         }
 
-        if (updatedDrink.getDescription() != null &&
-                !updatedDrink.getDescription().isBlank()) {
-
-            existingDrink.setDescription(
-                    updatedDrink.getDescription());
+        if (updatedDrink.getDescription() != null && !updatedDrink.getDescription().isBlank()) {
+            existingDrink.setDescription(updatedDrink.getDescription());
         }
 
         if (updatedDrink.getCategory() != null) {
-            existingDrink.setCategory(
-                    updatedDrink.getCategory());
+            existingDrink.setCategory(updatedDrink.getCategory());
         }
 
         if (updatedDrink.getAbv() != null) {
-
             validateAbv(updatedDrink.getAbv());
 
             existingDrink.setAbv(updatedDrink.getAbv());
         }
 
-        if (updatedDrink.getOrigin() != null &&
-                !updatedDrink.getOrigin().isBlank()) {
-
+        if (updatedDrink.getOrigin() != null && !updatedDrink.getOrigin().isBlank()) {
             existingDrink.setOrigin(updatedDrink.getOrigin());
         }
     }

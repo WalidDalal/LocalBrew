@@ -15,4 +15,6 @@ public interface DrinkRatingService {
     DrinkRating updateDrinkRatingById(DrinkRating drinkRating, UUID id);
 
     void deleteDrinkRatingById(UUID id);
+
+    List<DrinkRating> findAllDrinkRatingByUserId();
 }

@@ -13,7 +13,6 @@ import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.web.bind.annotation.*;
 
-import java.time.LocalDate;
 import java.util.List;
 import java.util.UUID;
 
@@ -24,10 +23,7 @@ public class VenueController {
     private final VenueService venueService;
     private final UserService userService;
 
-    public VenueController(
-            VenueService venueService,
-            UserService userService
-    ) {
+    public VenueController(VenueService venueService, UserService userService) {
         this.venueService = venueService;
         this.userService = userService;
     }
@@ -43,22 +39,16 @@ public class VenueController {
     }
 
     @GetMapping("/venues/{id}")
-    public ResponseEntity<VenueResponse> findVenueById(
-            @PathVariable UUID id
-    ) {
+    public ResponseEntity<VenueResponse> findVenueById(@PathVariable UUID id) {
         Venue venue = venueService.findVenueById(id);
 
         return ResponseEntity.ok(toResponse(venue));
     }
 
     @PostMapping("/owner/venues")
-    public ResponseEntity<VenueResponse> createVenue(
-            @Valid @RequestBody VenueRequest request,
-            @AuthenticationPrincipal UserDetails userDetails
-    ) {
-        User owner = userService.findByEmail(
-                userDetails.getUsername()
-        );
+    public ResponseEntity<VenueResponse> createVenue(@Valid @RequestBody VenueRequest request,
+                                                     @AuthenticationPrincipal UserDetails userDetails) {
+        User owner = userService.findByEmail(userDetails.getUsername());
 
         Venue venue = Venue.builder()
                 .name(request.getName())
@@ -78,10 +68,8 @@ public class VenueController {
     }
 
     @PutMapping("/owner/venues/{id}")
-    public ResponseEntity<VenueResponse> updateVenue(
-            @PathVariable UUID id,
-            @Valid @RequestBody VenueRequest request
-    ) {
+    public ResponseEntity<VenueResponse> updateVenue(@PathVariable UUID id,
+                                                     @Valid @RequestBody VenueRequest request) {
         Venue venue = Venue.builder()
                 .name(request.getName())
                 .description(request.getDescription())
@@ -91,36 +79,26 @@ public class VenueController {
                 .type(request.getType())
                 .build();
 
-        Venue updatedVenue = venueService.updateVenueById(
-                venue,
-                id
-        );
+        Venue updatedVenue = venueService.updateVenueById(venue, id);
 
         return ResponseEntity.ok(toResponse(updatedVenue));
     }
 
     @PatchMapping("/admin/venues/{id}/activate")
-    public ResponseEntity<VenueResponse> activateVenue(
-            @PathVariable UUID id
-    ) {
+    public ResponseEntity<VenueResponse> activateVenue(@PathVariable UUID id) {
         Venue venue = venueService.activateVenue(id);
-
         return ResponseEntity.ok(toResponse(venue));
     }
 
     @PatchMapping("/admin/venues/{id}/suspend")
-    public ResponseEntity<VenueResponse> suspendVenue(
-            @PathVariable UUID id
-    ) {
+    public ResponseEntity<VenueResponse> suspendVenue(@PathVariable UUID id) {
         Venue venue = venueService.suspendVenue(id);
 
         return ResponseEntity.ok(toResponse(venue));
     }
 
     @DeleteMapping("/admin/venues/{id}")
-    public ResponseEntity<Void> deleteVenue(
-            @PathVariable UUID id
-    ) {
+    public ResponseEntity<Void> deleteVenue(@PathVariable UUID id) {
         venueService.deleteVenueById(id);
 
         return ResponseEntity.noContent().build();
@@ -136,12 +114,8 @@ public class VenueController {
                 .longitude(venue.getLongitude())
                 .type(venue.getType())
                 .status(venue.getStatus())
-                .createdAt(LocalDate.from(venue.getCreatedAt()))
-                .ownerUsername(
-                        venue.getOwner() != null
-                                ? venue.getOwner().getUsername()
-                                : null
-                )
+                .createdAt(venue.getCreatedAt())
+                .ownerUsername(venue.getOwner() != null ? venue.getOwner().getUsername() : null)
                 .build();
     }
 }

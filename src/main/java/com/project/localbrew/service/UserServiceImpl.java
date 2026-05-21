@@ -1,14 +1,13 @@
 package com.project.localbrew.service;
 
+import com.project.localbrew.entity.User;
+import com.project.localbrew.repository.UserRepository;
+import jakarta.transaction.Transactional;
+import org.springframework.stereotype.Service;
+
 import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
-
-import com.project.localbrew.entity.User;
-import com.project.localbrew.repository.UserRepository;
-
-import jakarta.transaction.Transactional;
-import org.springframework.stereotype.Service;
 
 @Service
 public class UserServiceImpl implements UserService {
@@ -31,16 +30,15 @@ public class UserServiceImpl implements UserService {
         Optional<User> optUser = userRepository.findById(id);
         return optUser.orElseThrow(() -> new IllegalArgumentException("Utente non trovato con ID: " + id));
     }
+
     @Override
     public User findByEmail(String email) {
 
         return userRepository.findByEmail(email)
                 .orElseThrow(() ->
-                        new IllegalArgumentException(
-                                "Utente non trovato"
-                        )
-                );
+                        new IllegalArgumentException("Utente non trovato"));
     }
+
     @Transactional
     @Override
     public User saveUser(User user) {

@@ -2,6 +2,7 @@ package com.project.localbrew.entity;
 
 import jakarta.persistence.*;
 import lombok.*;
+import org.hibernate.annotations.CreationTimestamp;
 
 import java.time.LocalDateTime;
 import java.util.UUID;
@@ -24,6 +25,9 @@ public class Venue {
     @Column(length = 500)
     private String description;
 
+    @Column(nullable = false)
+    private String city;
+
     @Column(nullable = false, length = 70)
     private String address;
 
@@ -44,6 +48,7 @@ public class Venue {
     @Enumerated(EnumType.STRING)
     private VenueStatus status;
 
+    @CreationTimestamp
     @Column(nullable = false, name = "created_at")
     private LocalDateTime createdAt;
 

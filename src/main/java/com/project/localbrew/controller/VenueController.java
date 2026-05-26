@@ -2,15 +2,12 @@ package com.project.localbrew.controller;
 
 import com.project.localbrew.dto.request.VenueRequest;
 import com.project.localbrew.dto.response.VenueResponse;
-import com.project.localbrew.entity.User;
 import com.project.localbrew.entity.Venue;
-import com.project.localbrew.service.UserService;
 import com.project.localbrew.service.VenueService;
 import jakarta.validation.Valid;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-import org.springframework.security.core.annotation.AuthenticationPrincipal;
-import org.springframework.security.core.userdetails.UserDetails;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -21,16 +18,24 @@ import java.util.UUID;
 public class VenueController {
 
     private final VenueService venueService;
-    private final UserService userService;
 
-    public VenueController(VenueService venueService, UserService userService) {
+    public VenueController(VenueService venueService) {
         this.venueService = venueService;
-        this.userService = userService;
     }
 
-    @GetMapping("/venues")
+    @GetMapping("/admin/venues")
+    @PreAuthorize("hasRole('ADMIN')")
+    public ResponseEntity<List<VenueResponse>> findAllVenues() {
+        List<VenueResponse> venues = venueService.findAllVenues()
+                .stream()
+                .map(this::toResponse)
+                .toList();
+        return ResponseEntity.ok(venues);
+    }
+
+    @GetMapping("/public/venues/active")
     public ResponseEntity<List<VenueResponse>> findActiveVenues() {
-        List<VenueResponse> venues = venueService.findActiveVenues()
+        List<VenueResponse> venues = venueService.findAllActiveVenues()
                 .stream()
                 .map(this::toResponse)
                 .toList();
@@ -38,7 +43,7 @@ public class VenueController {
         return ResponseEntity.ok(venues);
     }
 
-    @GetMapping("/venues/{id}")
+    @GetMapping("/public/venues/{id}")
     public ResponseEntity<VenueResponse> findVenueById(@PathVariable UUID id) {
         Venue venue = venueService.findVenueById(id);
 
@@ -46,18 +51,16 @@ public class VenueController {
     }
 
     @PostMapping("/owner/venues")
-    public ResponseEntity<VenueResponse> createVenue(@Valid @RequestBody VenueRequest request,
-                                                     @AuthenticationPrincipal UserDetails userDetails) {
-        User owner = userService.findByEmail(userDetails.getUsername());
+    public ResponseEntity<VenueResponse> createVenue(@Valid @RequestBody VenueRequest request) {
 
         Venue venue = Venue.builder()
                 .name(request.getName())
                 .description(request.getDescription())
+                .city(request.getCity())
                 .address(request.getAddress())
                 .latitude(request.getLatitude())
                 .longitude(request.getLongitude())
                 .type(request.getType())
-                .owner(owner)
                 .build();
 
         Venue savedVenue = venueService.saveVenue(venue);
@@ -73,6 +76,7 @@ public class VenueController {
         Venue venue = Venue.builder()
                 .name(request.getName())
                 .description(request.getDescription())
+                .city(request.getCity())
                 .address(request.getAddress())
                 .latitude(request.getLatitude())
                 .longitude(request.getLongitude())
@@ -109,6 +113,7 @@ public class VenueController {
                 .id(venue.getId())
                 .name(venue.getName())
                 .description(venue.getDescription())
+                .city(venue.getCity())
                 .address(venue.getAddress())
                 .latitude(venue.getLatitude())
                 .longitude(venue.getLongitude())

@@ -17,6 +17,10 @@ public class VenueRequest {
     @Size(max = 500, message = "La descrizione non può superare 500 caratteri")
     private String description;
 
+    @NotBlank(message = "La città è obbligatoria")
+    @Size(max = 50, message = "La città non può superare i 50 caratteri")
+    private String city;
+
     @NotBlank(message = "L'indirizzo è obbligatorio")
     @Size(max = 70, message = "L'indirizzo non può superare 70 caratteri")
     private String address;

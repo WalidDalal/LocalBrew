@@ -6,6 +6,7 @@ import com.project.localbrew.repository.VenueRepository;
 import com.project.localbrew.security.CurrentUserService;
 import jakarta.persistence.EntityNotFoundException;
 import jakarta.transaction.Transactional;
+import org.springframework.security.access.AccessDeniedException;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
@@ -84,18 +85,15 @@ public class VenueServiceImpl implements VenueService {
         if (venue.getId() != null) {
             throw new IllegalArgumentException("Un nuovo venue non deve avere ID");
         }
-
-        // PRENDE OWNER DAL JWT
+        //prende user dal JWT
         User currentUser = currentUserService.getCurrentUser();
 
         // Solo OWNER può creare venue
         if (currentUser.getRole() != Role.OWNER) {
             throw new IllegalArgumentException("Solo gli OWNER possono creare venue");
         }
-
+        //status automatico
         venue.setOwner(currentUser);
-
-        // status automatico
         venue.setStatus(VenueStatus.PENDING);
 
         return venueRepository.save(venue);
@@ -139,6 +137,7 @@ public class VenueServiceImpl implements VenueService {
         if (venue.getAddress() != null && !venue.getAddress().isBlank()) {
             existingVenue.setAddress(venue.getAddress());
         }
+
 
         if (venue.getLatitude() != null) {
             existingVenue.setLatitude(venue.getLatitude());

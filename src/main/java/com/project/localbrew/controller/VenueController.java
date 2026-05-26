@@ -53,6 +53,8 @@ public class VenueController {
     @PostMapping("/owner/venues")
     public ResponseEntity<VenueResponse> createVenue(@Valid @RequestBody VenueRequest request) {
 
+    @PostMapping("/venues")
+    public ResponseEntity<VenueResponse> createVenue(@Valid @RequestBody VenueRequest request) {
         Venue venue = Venue.builder()
                 .name(request.getName())
                 .description(request.getDescription())

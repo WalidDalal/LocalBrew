@@ -7,7 +7,6 @@ import com.project.localbrew.service.VenueService;
 import jakarta.validation.Valid;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -24,7 +23,6 @@ public class VenueController {
     }
 
     @GetMapping("/admin/venues")
-    @PreAuthorize("hasRole('ADMIN')")
     public ResponseEntity<List<VenueResponse>> findAllVenues() {
         List<VenueResponse> venues = venueService.findAllVenues()
                 .stream()
@@ -33,8 +31,15 @@ public class VenueController {
         return ResponseEntity.ok(venues);
     }
 
+    @GetMapping("/private/venues/{id}")
+    public ResponseEntity<VenueResponse> findVenueById(@PathVariable UUID id) {
+        Venue venue = venueService.findVenueById(id);
+
+        return ResponseEntity.ok(toResponse(venue));
+    }
+
     @GetMapping("/public/venues/active")
-    public ResponseEntity<List<VenueResponse>> findActiveVenues() {
+    public ResponseEntity<List<VenueResponse>> findAllActiveVenues() {
         List<VenueResponse> venues = venueService.findAllActiveVenues()
                 .stream()
                 .map(this::toResponse)
@@ -43,15 +48,15 @@ public class VenueController {
         return ResponseEntity.ok(venues);
     }
 
-    @GetMapping("/public/venues/{id}")
-    public ResponseEntity<VenueResponse> findVenueById(@PathVariable UUID id) {
-        Venue venue = venueService.findVenueById(id);
+    @GetMapping("/public/venues/search")
+    public ResponseEntity<List<VenueResponse>> findAllActiveVenuesByName(@RequestParam String name) {
+        List<VenueResponse> venues = venueService.findAllActiveVenuesByName(name)
+                .stream()
+                .map(this::toResponse)
+                .toList();
 
-        return ResponseEntity.ok(toResponse(venue));
+        return ResponseEntity.ok(venues);
     }
-
-    @PostMapping("/owner/venues")
-    public ResponseEntity<VenueResponse> createVenue(@Valid @RequestBody VenueRequest request) {
 
     @PostMapping("/venues")
     public ResponseEntity<VenueResponse> createVenue(@Valid @RequestBody VenueRequest request) {
@@ -126,4 +131,5 @@ public class VenueController {
                 .build();
     }
 }
+
 

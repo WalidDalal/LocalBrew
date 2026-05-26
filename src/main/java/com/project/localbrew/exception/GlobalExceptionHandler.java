@@ -5,11 +5,10 @@ import jakarta.persistence.EntityNotFoundException;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.AccessDeniedException;
 import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
-import org.springframework.security.access.AccessDeniedException;
-import jakarta.persistence.EntityNotFoundException;
 
 import java.time.LocalDateTime;
 import java.util.HashMap;
@@ -30,7 +29,20 @@ public class GlobalExceptionHandler {
         return buildError(ex.getMessage(), HttpStatus.NOT_FOUND);
     }
 
-    //private static final Logger log = LoggerFactory.getLogger(GlobalExceptionHandler.class);
+    @ExceptionHandler(BadRequestException.class)
+    public ResponseEntity<ApiErrorDto> handleBadRequest(BadRequestException ex) {
+        return buildError(ex.getMessage(), HttpStatus.BAD_REQUEST);
+    }
+
+    @ExceptionHandler(DuplicatedResourceException.class)
+    public ResponseEntity<ApiErrorDto> handleDuplicate(DuplicatedResourceException ex) {
+        return buildError(ex.getMessage(), HttpStatus.CONFLICT);
+    }
+
+    @ExceptionHandler(IllegalArgumentException.class)
+    public ResponseEntity<ApiErrorDto> handleIllegalArgument(IllegalArgumentException ex) {
+        return buildError(ex.getMessage(), HttpStatus.BAD_REQUEST);
+    }
 
     @ExceptionHandler(MethodArgumentNotValidException.class)
     public ResponseEntity<ApiErrorDto> handleValidationErrors(MethodArgumentNotValidException ex) {
@@ -48,36 +60,6 @@ public class GlobalExceptionHandler {
         apiError.setErrors(errors);
 
         return new ResponseEntity<>(apiError, HttpStatus.BAD_REQUEST);
-    }
-
-    @ExceptionHandler(EntityNotFoundException.class)
-    public ResponseEntity<ApiErrorDto> handleEntityNotFound(EntityNotFoundException ex) {
-        return buildError(ex.getMessage(), HttpStatus.NOT_FOUND);
-    }
-
-    @ExceptionHandler(UserBlockedException.class)
-    public ResponseEntity<ApiErrorDto> handleUserBlocked(UserBlockedException ex) {
-        return buildError(ex.getMessage(), HttpStatus.BAD_REQUEST);
-    }
-
-    @ExceptionHandler(BadRequestException.class)
-    public ResponseEntity<ApiErrorDto> handleBadRequest(BadRequestException ex) {
-        return buildError(ex.getMessage(), HttpStatus.BAD_REQUEST);
-    }
-
-    @ExceptionHandler(DuplicatedResourceException.class)
-    public ResponseEntity<ApiErrorDto> handleDuplicate(DuplicatedResourceException ex) {
-        return buildError(ex.getMessage(), HttpStatus.CONFLICT);
-    }
-
-    @ExceptionHandler(IllegalArgumentException.class)
-    public ResponseEntity<ApiErrorDto> handleIllegalArgument(IllegalArgumentException ex) {
-        return buildError(ex.getMessage(), HttpStatus.BAD_REQUEST);
-    }
-
-    @ExceptionHandler(BadTimeException.class)
-    public ResponseEntity<ApiErrorDto> handleBadTime(BadTimeException ex) {
-        return buildError(ex.getMessage(), HttpStatus.BAD_REQUEST);
     }
 
     @ExceptionHandler(Exception.class)

@@ -9,6 +9,7 @@ import com.project.localbrew.entity.VenueStatus;
 
 public interface VenueService {
 	// Crud
+	Venue findActiveVenueById(UUID id);
 	List<Venue> findAllVenues();
 	Venue findVenueById(UUID id);
 	Venue saveVenue(Venue venue);

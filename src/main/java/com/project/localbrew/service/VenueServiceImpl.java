@@ -6,6 +6,7 @@ import com.project.localbrew.repository.VenueRepository;
 import com.project.localbrew.security.CurrentUserService;
 import jakarta.persistence.EntityNotFoundException;
 import jakarta.transaction.Transactional;
+import org.springframework.security.access.AccessDeniedException;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
@@ -71,27 +72,21 @@ public class VenueServiceImpl implements VenueService {
 
     @Override
     public Venue saveVenue(Venue venue) {
-
-        validateVenueForCreate(venue);
-
-        // NON deve avere ID
+        if (venue == null) {
+            throw new IllegalArgumentException("Venue nullo");
+        }
+        //non deve avere ID
         if (venue.getId() != null) {
-
             throw new IllegalArgumentException("Un nuovo venue non deve avere ID");
         }
-
-        // PRENDE OWNER DAL JWT
+        //prende user dal JWT
         User currentUser = currentUserService.getCurrentUser();
 
-        // Solo OWNER può creare venue
-        if (!currentUser.getRole().name().equals("OWNER")) {
-
-            throw new IllegalArgumentException("Solo gli OWNER possono creare venue");
+        if (currentUser.getRole() != Role.OWNER && currentUser.getRole() != Role.ADMIN) {
+            throw new AccessDeniedException("Solo OWNER o ADMIN possono creare venue");
         }
-
+        //status automatico
         venue.setOwner(currentUser);
-
-        // status automatico
         venue.setStatus(VenueStatus.PENDING);
 
         return venueRepository.save(venue);
@@ -122,7 +117,7 @@ public class VenueServiceImpl implements VenueService {
 
         if (!isAdmin && !isOwnerOfVenue) {
 
-            throw new IllegalArgumentException("Non puoi modificare questo locale");
+            throw new AccessDeniedException("Non puoi modificare questo locale");
         }
 
         // UPDATE FIELDS
@@ -137,10 +132,15 @@ public class VenueServiceImpl implements VenueService {
             existingVenue.setDescription(venue.getDescription());
         }
 
+        if (venue.getCity() != null && !venue.getCity().isBlank()) {
+            existingVenue.setCity(venue.getCity());
+        }
+
         if (venue.getAddress() != null && !venue.getAddress().isBlank()) {
 
             existingVenue.setAddress(venue.getAddress());
         }
+
 
         if (venue.getLatitude() != null) {
 
@@ -182,7 +182,7 @@ public class VenueServiceImpl implements VenueService {
         // SOLO ADMIN
         if (!currentUser.getRole().name().equals("ADMIN")) {
 
-            throw new IllegalArgumentException("Solo ADMIN può modificare lo status");
+            throw new AccessDeniedException("Solo ADMIN può modificare lo status");
         }
 
         Venue venue = findVenueById(id);
@@ -208,20 +208,16 @@ public class VenueServiceImpl implements VenueService {
 
     @Override
     public void deleteVenueById(UUID id) {
-
-        validateId(id);
+        if (id == null) {
+            throw new IllegalArgumentException("ID nullo");
+        }
 
         Venue venue = findVenueById(id);
 
         User currentUser = currentUserService.getCurrentUser();
 
-        boolean isAdmin = currentUser.getRole().name().equals("ADMIN");
-
-        boolean isOwnerOfVenue = venue.getOwner().getId().equals(currentUser.getId());
-
-        if (!isAdmin && !isOwnerOfVenue) {
-
-            throw new IllegalArgumentException("Non puoi eliminare questo locale");
+        if (currentUser.getRole() != Role.ADMIN) {
+            throw new AccessDeniedException("Solo ADMIN può eliminare un locale");
         }
 
         venueRepository.delete(venue);
@@ -231,41 +227,19 @@ public class VenueServiceImpl implements VenueService {
     // VALIDATIONS
     // =========================
 
-    private void validateVenueForCreate(Venue venue) {
-
-        if (venue == null) {
-
-            throw new IllegalArgumentException("Venue nullo");
+    @Override
+    public Venue findActiveVenueById(UUID id) {
+        if (id == null) {
+            throw new IllegalArgumentException("ID nullo");
         }
 
-        if (venue.getName() == null || venue.getName().isBlank()) {
+        Venue venue = findVenueById(id);
 
-            throw new IllegalArgumentException("Nome venue obbligatorio");
+        if (venue.getStatus() != VenueStatus.ACTIVE) {
+            throw new EntityNotFoundException("Venue non trovato con ID: " + id);
         }
 
-        if (venue.getAddress() == null || venue.getAddress().isBlank()) {
-
-            throw new IllegalArgumentException("Indirizzo venue obbligatorio");
-        }
-
-        if (venue.getLatitude() == null) {
-
-            throw new IllegalArgumentException("Latitudine venue obbligatoria");
-        }
-
-        if (venue.getLongitude() == null) {
-
-            throw new IllegalArgumentException("Longitudine venue obbligatoria");
-        }
-
-        if (venue.getType() == null) {
-
-            throw new IllegalArgumentException("Tipo venue obbligatorio");
-        }
-
-        validateLatitude(venue.getLatitude());
-
-        validateLongitude(venue.getLongitude());
+        return venue;
     }
 
     private void validateId(UUID id) {

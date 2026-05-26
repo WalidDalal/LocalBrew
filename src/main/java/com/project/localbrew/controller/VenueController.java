@@ -2,18 +2,15 @@ package com.project.localbrew.controller;
 
 import com.project.localbrew.dto.request.VenueRequest;
 import com.project.localbrew.dto.response.VenueResponse;
-import com.project.localbrew.entity.User;
 import com.project.localbrew.entity.Venue;
 import com.project.localbrew.service.UserService;
 import com.project.localbrew.service.VenueService;
 import jakarta.validation.Valid;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-import org.springframework.security.core.annotation.AuthenticationPrincipal;
-import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.web.bind.annotation.*;
 
-import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.util.List;
 import java.util.UUID;
 
@@ -32,7 +29,7 @@ public class VenueController {
         this.userService = userService;
     }
 
-    @GetMapping("/venues")
+    @GetMapping("/public/venues/active")
     public ResponseEntity<List<VenueResponse>> findActiveVenues() {
         List<VenueResponse> venues = venueService.findActiveVenues()
                 .stream()
@@ -42,32 +39,23 @@ public class VenueController {
         return ResponseEntity.ok(venues);
     }
 
-    @GetMapping("/venues/{id}")
-    public ResponseEntity<VenueResponse> findVenueById(
-            @PathVariable UUID id
-    ) {
-        Venue venue = venueService.findVenueById(id);
+    @GetMapping("/public/venues/{id}")
+    public ResponseEntity<VenueResponse> findPublicVenueById(@PathVariable UUID id) {
+        Venue venue = venueService.findActiveVenueById(id);
 
         return ResponseEntity.ok(toResponse(venue));
-    }
+    } //fa si che le venue PENDING o SUSPENDED non siano visibili pubblicamente
 
-    @PostMapping("/owner/venues")
-    public ResponseEntity<VenueResponse> createVenue(
-            @Valid @RequestBody VenueRequest request,
-            @AuthenticationPrincipal UserDetails userDetails
-    ) {
-        User owner = userService.findByEmail(
-                userDetails.getUsername()
-        );
-
+    @PostMapping("/venues")
+    public ResponseEntity<VenueResponse> createVenue(@Valid @RequestBody VenueRequest request) {
         Venue venue = Venue.builder()
                 .name(request.getName())
                 .description(request.getDescription())
+                .city(request.getCity())
                 .address(request.getAddress())
                 .latitude(request.getLatitude())
                 .longitude(request.getLongitude())
                 .type(request.getType())
-                .owner(owner)
                 .build();
 
         Venue savedVenue = venueService.saveVenue(venue);
@@ -85,6 +73,7 @@ public class VenueController {
         Venue venue = Venue.builder()
                 .name(request.getName())
                 .description(request.getDescription())
+                .city(request.getCity())
                 .address(request.getAddress())
                 .latitude(request.getLatitude())
                 .longitude(request.getLongitude())
@@ -131,12 +120,13 @@ public class VenueController {
                 .id(venue.getId())
                 .name(venue.getName())
                 .description(venue.getDescription())
+                .city(venue.getCity())
                 .address(venue.getAddress())
                 .latitude(venue.getLatitude())
                 .longitude(venue.getLongitude())
                 .type(venue.getType())
                 .status(venue.getStatus())
-                .createdAt(LocalDate.from(venue.getCreatedAt()))
+                .createdAt(LocalDateTime.from(venue.getCreatedAt()))
                 .ownerUsername(
                         venue.getOwner() != null
                                 ? venue.getOwner().getUsername()

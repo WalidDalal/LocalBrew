@@ -16,6 +16,7 @@ public class VenueResponse {
     private UUID id;
     private String name;
     private String description;
+    private String city;
     private String address;
     private Double latitude;
     private Double longitude;

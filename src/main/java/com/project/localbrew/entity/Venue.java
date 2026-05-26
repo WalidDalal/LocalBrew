@@ -25,7 +25,7 @@ public class Venue {
     @Column(length = 500)
     private String description;
 
-    @Column(nullable = false, length = 50)
+    @Column(nullable = false)
     private String city;
 
     @Column(nullable = false, length = 70)

@@ -4,6 +4,7 @@ import com.project.localbrew.security.JwtAuthenticationFilter;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.security.config.Customizer;
+import org.springframework.security.config.annotation.method.configuration.EnableMethodSecurity;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configurers.AbstractHttpConfigurer;
 import org.springframework.security.config.http.SessionCreationPolicy;
@@ -11,7 +12,9 @@ import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
+import org.springframework.http.HttpMethod;
 
+@EnableMethodSecurity
 @Configuration
 public class SecurityConfig {
 
@@ -42,12 +45,35 @@ public class SecurityConfig {
 
                 .authorizeHttpRequests(auth -> auth
 
+                        // PUBLIC
                         .requestMatchers(
                                 "/api/auth/**",
-                                "/api/map/**",
-                                "/api/breweries/public/**",
-                                "/api/venues/**"
+                                "/api/map/**"
                         ).permitAll()
+
+                        // VENUES PUBLIC GET
+                        .requestMatchers(
+                                HttpMethod.GET,
+                                "/api/venues/**",
+                                "/api/drinks/**"
+                        ).permitAll()
+
+                        // OWNER
+                        .requestMatchers(
+                                HttpMethod.POST,
+                                "/api/venues/**"
+                        ).hasRole("OWNER")
+
+                        .requestMatchers(
+                                HttpMethod.PATCH,
+                                "/api/venues/**"
+                        ).hasRole("OWNER")
+
+                        // ADMIN
+                        .requestMatchers(
+                                HttpMethod.DELETE,
+                                "/api/venues/**"
+                        ).hasRole("ADMIN")
 
                         .requestMatchers(
                                 "/api/admin/**"
@@ -63,9 +89,9 @@ public class SecurityConfig {
                 .addFilterBefore(
                         jwtAuthFilter,
                         UsernamePasswordAuthenticationFilter.class
-                )
+                );
 
-                .httpBasic(Customizer.withDefaults());
+
 
         return http.build();
     }

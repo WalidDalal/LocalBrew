@@ -52,7 +52,7 @@ public class DrinkServiceImpl implements DrinkService {
         validateId(id);
 
         return drinkRepository.findById(id)
-                .orElseThrow(() -> new DrinkNotFoundException(id));
+                .orElseThrow(() -> new DrinkNotFoundException("Drink non trovato con ID: " + id));
     }
 
     // =========================
@@ -69,7 +69,7 @@ public class DrinkServiceImpl implements DrinkService {
         }
 
         Drink existingDrink = drinkRepository.findById(id)
-                .orElseThrow(() -> new DrinkNotFoundException(id));
+                .orElseThrow(() -> new DrinkNotFoundException("Drink non trovato con ID: " + id));
 
         updateFields(existingDrink, updatedDrink);
 
@@ -86,7 +86,7 @@ public class DrinkServiceImpl implements DrinkService {
         validateId(id);
 
         if (!drinkRepository.existsById(id)) {
-            throw new DrinkNotFoundException(id);
+            throw new DrinkNotFoundException("Drink non trovato con ID: " + id);
         }
 
         drinkRepository.deleteById(id);

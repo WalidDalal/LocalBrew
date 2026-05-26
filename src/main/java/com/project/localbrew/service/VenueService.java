@@ -17,6 +17,8 @@ public interface VenueService {
 
     List<Venue> findAllVenuesByType(VenueType type);
 
+    List<Venue> findAllActiveVenuesByName(String name);
+
     List<Drink> findAllDrinksByVenueId(UUID venueId);
 
     List<Venue> findAllActiveVenues();

@@ -19,4 +19,6 @@ public interface VenueRepository extends JpaRepository<Venue, UUID> {
     List<Venue> findAllByType(VenueType venueType);
 
     List<Venue> findAllByName(String name);
+
+    List<Venue> findAllByNameContainingIgnoreCaseAndStatus(String name, VenueStatus status);
 }

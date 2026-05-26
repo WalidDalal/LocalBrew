@@ -80,6 +80,15 @@ public class VenueServiceImpl implements VenueService {
     }
 
     @Override
+    public List<Venue> findAllActiveVenuesByName(String name) {
+        if (name == null || name.isBlank()) {
+            throw new IllegalArgumentException("Name nullo");
+        }
+
+        return venueRepository.findAllByNameContainingIgnoreCaseAndStatus(name, VenueStatus.ACTIVE);
+    }
+
+    @Override
     public Venue saveVenue(Venue venue) {
         // NON deve avere ID nullo
         if (venue.getId() != null) {
@@ -90,8 +99,9 @@ public class VenueServiceImpl implements VenueService {
 
         // Solo OWNER può creare venue
         if (currentUser.getRole() != Role.OWNER) {
-            throw new IllegalArgumentException("Solo gli OWNER possono creare venue");
+            throw new AccessDeniedException("Non puoi creare questo locale");
         }
+
         //status automatico
         venue.setOwner(currentUser);
         venue.setStatus(VenueStatus.PENDING);
@@ -117,7 +127,7 @@ public class VenueServiceImpl implements VenueService {
         boolean isOwnerOfVenue = existingVenue.getOwner().getId().equals(currentUser.getId());
 
         if (!isAdmin && !isOwnerOfVenue) {
-            throw new IllegalArgumentException("Non puoi modificare questo locale");
+            throw new AccessDeniedException("Non puoi modificare questo locale");
         }
 
         // UPDATE FIELDS
@@ -144,7 +154,6 @@ public class VenueServiceImpl implements VenueService {
         }
 
         if (venue.getLongitude() != null) {
-
             existingVenue.setLongitude(venue.getLongitude());
         }
 
@@ -168,7 +177,7 @@ public class VenueServiceImpl implements VenueService {
 
         // SOLO ADMIN
         if (!currentUser.getRole().name().equals("ADMIN")) {
-            throw new IllegalArgumentException("Solo ADMIN può modificare lo status");
+            throw new AccessDeniedException("Non puoi modificare questo locale");
         }
 
         Venue venue = findVenueById(id);
@@ -201,7 +210,7 @@ public class VenueServiceImpl implements VenueService {
         boolean isOwnerOfVenue = venue.getOwner().getId().equals(currentUser.getId());
 
         if (!isAdmin && !isOwnerOfVenue) {
-            throw new IllegalArgumentException("Non puoi eliminare questo locale");
+            throw new AccessDeniedException("Non puoi eliminare questo locale");
         }
 
         venueRepository.delete(venue);

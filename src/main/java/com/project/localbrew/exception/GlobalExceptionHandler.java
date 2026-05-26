@@ -1,6 +1,7 @@
 package com.project.localbrew.exception;
 
 import com.project.localbrew.dto.ApiErrorDto;
+import jakarta.persistence.EntityNotFoundException;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -34,6 +35,11 @@ public class GlobalExceptionHandler {
         apiError.setErrors(errors);
 
         return new ResponseEntity<>(apiError, HttpStatus.BAD_REQUEST);
+    }
+
+    @ExceptionHandler(EntityNotFoundException.class)
+    public ResponseEntity<ApiErrorDto> handleEntityNotFound(EntityNotFoundException ex) {
+        return buildError(ex.getMessage(), HttpStatus.NOT_FOUND);
     }
 
     @ExceptionHandler(UserBlockedException.class)

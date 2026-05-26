@@ -1,11 +1,10 @@
 package com.project.localbrew.service;
 
-import com.project.localbrew.entity.Drink;
 import com.project.localbrew.entity.DrinkRating;
 import com.project.localbrew.entity.User;
 import com.project.localbrew.repository.DrinkRatingRepository;
 import com.project.localbrew.repository.DrinkRepository;
-import com.project.localbrew.repository.UserRepository;
+import com.project.localbrew.security.CurrentUserService;
 import jakarta.persistence.EntityNotFoundException;
 import jakarta.transaction.Transactional;
 import org.springframework.stereotype.Service;
@@ -13,19 +12,16 @@ import org.springframework.stereotype.Service;
 import java.util.List;
 import java.util.UUID;
 
-// TODO
-// creare eccezioni personalizzate
-
 @Service
 public class DrinkRatingServiceImpl implements DrinkRatingService {
     private final DrinkRatingRepository drinkRatingRepository;
-    private final UserRepository userRepository;
     private final DrinkRepository drinkRepository;
+    private final CurrentUserService currentUserService;
 
-    public DrinkRatingServiceImpl(DrinkRatingRepository drinkRatingRepository, UserRepository userRepository, DrinkRepository drinkRepository) {
+    public DrinkRatingServiceImpl(DrinkRatingRepository drinkRatingRepository, DrinkRepository drinkRepository, CurrentUserService currentUserService) {
         this.drinkRatingRepository = drinkRatingRepository;
-        this.userRepository = userRepository;
         this.drinkRepository = drinkRepository;
+        this.currentUserService = currentUserService;
     }
 
     @Override
@@ -37,6 +33,10 @@ public class DrinkRatingServiceImpl implements DrinkRatingService {
 
         drinkRepository.findById(drinkRating.getDrink().getId())
                 .orElseThrow(() -> new EntityNotFoundException("Drink non trovato"));
+
+        // utente recuperato dal JWT
+        User user = currentUserService.getCurrentUser();
+        drinkRating.setUser(user);
 
         // controllo che non ci sia già questa coppia di id sul DB
         boolean exists = drinkRatingRepository.existsByUserIdAndDrinkId(drinkRating.getUser().getId(), drinkRating.getDrink().getId());
@@ -55,8 +55,8 @@ public class DrinkRatingServiceImpl implements DrinkRatingService {
 
     @Override
     public DrinkRating findDrinkRatingById(UUID id) {
-        return drinkRatingRepository.findById(id).
-                orElseThrow(() -> new EntityNotFoundException("DrinkRating non trovato con ID: " + id));
+        return drinkRatingRepository.findById(id)
+                .orElseThrow(() -> new EntityNotFoundException("DrinkRating non trovato con ID: " + id));
     }
 
     @Override
@@ -72,6 +72,11 @@ public class DrinkRatingServiceImpl implements DrinkRatingService {
         DrinkRating existing = drinkRatingRepository.findById(id)
                 .orElseThrow(() -> new EntityNotFoundException("DrinkRating non trovato con ID: " + id));
 
+        User currentUser = currentUserService.getCurrentUser();
+        if (!existing.getUser().getId().equals(currentUser.getId())) {
+            throw new IllegalArgumentException("Non puoi modificare il rating di un altro utente");
+        }
+
         if (drinkRating.getRating() != null) {
             existing.setRating(drinkRating.getRating());
         }
@@ -86,17 +91,21 @@ public class DrinkRatingServiceImpl implements DrinkRatingService {
             throw new IllegalArgumentException("ID nullo");
         }
 
-        DrinkRating savedDrinkRating = drinkRatingRepository.findById(id)
+        DrinkRating existing = drinkRatingRepository.findById(id)
                 .orElseThrow(() -> new EntityNotFoundException("DrinkRating non trovato con ID: " + id));
 
-        drinkRatingRepository.delete(savedDrinkRating);
+        User currentUser = currentUserService.getCurrentUser();
+        if (!existing.getUser().getId().equals(currentUser.getId())) {
+            throw new IllegalArgumentException("Non puoi eliminare il rating di un altro utente");
+        }
+
+        drinkRatingRepository.delete(existing);
     }
 
-    private Drink findDrinkInsideDrinkRating(DrinkRating drinkRating) {
-        return drinkRepository.findById(drinkRating.getDrink().getId()).orElseThrow(() -> new EntityNotFoundException("DrinkRating non trovato con ID: " + drinkRating.getDrink().getId()));
-    }
-
-    private User findUserInsideDrinkRating(DrinkRating drinkRating) {
-        return userRepository.findById(drinkRating.getUser().getId()).orElseThrow(() -> new EntityNotFoundException("DrinkRating non trovato con ID: " + drinkRating.getUser().getId()));
+    @Override
+    @Transactional
+    public List<DrinkRating> findAllDrinkRatingByUserId() {
+        User user = currentUserService.getCurrentUser();
+        return drinkRatingRepository.findAllByUserId(user.getId());
     }
 }

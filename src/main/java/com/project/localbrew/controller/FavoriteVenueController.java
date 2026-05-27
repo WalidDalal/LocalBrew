@@ -7,11 +7,7 @@ import org.springframework.web.bind.annotation.RestController;
 @RestController
 @RequestMapping("/api/V1")
 public class FavoriteVenueController {
-    private final FavoriteDrinkService favoriteDrinkService;
 
-    public FavoriteVenueController(FavoriteDrinkService favoriteDrinkService) {
-        this.favoriteDrinkService = favoriteDrinkService;
-    }
 
 
 }

@@ -1,7 +1,6 @@
 package com.project.localbrew.service;
 
 import com.project.localbrew.entity.*;
-import com.project.localbrew.repository.VenueDrinkRepository;
 import com.project.localbrew.repository.VenueRepository;
 import com.project.localbrew.security.CurrentUserService;
 import jakarta.persistence.EntityNotFoundException;
@@ -18,12 +17,10 @@ public class VenueServiceImpl implements VenueService {
 
     private final VenueRepository venueRepository;
     private final CurrentUserService currentUserService;
-    private final VenueDrinkRepository venueDrinkRepository;
 
-    public VenueServiceImpl(VenueRepository venueRepository, CurrentUserService currentUserService, VenueDrinkRepository venueDrinkRepository) {
+    public VenueServiceImpl(VenueRepository venueRepository, CurrentUserService currentUserService) {
         this.venueRepository = venueRepository;
         this.currentUserService = currentUserService;
-        this.venueDrinkRepository = venueDrinkRepository;
     }
 
     @Override
@@ -32,16 +29,27 @@ public class VenueServiceImpl implements VenueService {
     }
 
     @Override
-    public List<Venue> findAllVenuesByCity(String city) {
+    public List<Venue> findAllActiveVenuesByCity(String city) {
         if (city == null || city.isBlank()) {
             throw new IllegalArgumentException("City nullo");
         }
 
-        return venueRepository.findAllByCity(city);
+        return venueRepository.findAllByCityContainingIgnoreCaseAndStatus(city, VenueStatus.ACTIVE);
     }
 
+    @Override
     public List<Venue> findAllActiveVenues() {
         return venueRepository.findAllByStatus(VenueStatus.ACTIVE);
+    }
+
+    @Override
+    public List<Venue> findAllPendingVenues() {
+        return venueRepository.findAllByStatus(VenueStatus.PENDING);
+    }
+
+    @Override
+    public List<Venue> findAllSuspendedVenues() {
+        return venueRepository.findAllByStatus(VenueStatus.SUSPENDED);
     }
 
     @Override
@@ -54,29 +62,18 @@ public class VenueServiceImpl implements VenueService {
     }
 
     @Override
-    public List<Drink> findAllDrinksByVenueId(UUID id) {
-        if (id == null) {
-            throw new IllegalArgumentException("ID nullo");
-        }
+    public List<Venue> findAllVenuesByCurrentOwner() {
+        User owner = currentUserService.getCurrentUser();
 
-        return venueDrinkRepository.findByVenueId(id).stream().map(VenueDrink::getDrink).toList();
+        return venueRepository.findAllByOwnerId(owner.getId());
     }
 
     @Override
-    public List<Venue> findAllVenuesByName(String name) {
-        if (name == null || name.isBlank()) {
-            throw new IllegalArgumentException("Name nullo");
+    public List<Venue> findAllActiveVenuesByType(List<VenueType> types) {
+        if (types == null || types.isEmpty()) {
+            throw new IllegalArgumentException("Types nullo");
         }
-
-        return venueRepository.findAllByName(name);
-    }
-
-    @Override
-    public List<Venue> findAllVenuesByType(VenueType type) {
-        if (type == null) {
-            throw new IllegalArgumentException("Type nullo");
-        }
-        return venueRepository.findAllByType(type);
+        return venueRepository.findAllByTypeInAndStatus(types, VenueStatus.ACTIVE);
     }
 
     @Override
@@ -97,7 +94,7 @@ public class VenueServiceImpl implements VenueService {
         //prende user dal JWT
         User currentUser = currentUserService.getCurrentUser();
 
-        // Solo OWNER può creare venue
+        // Solo OWNER o ADMIN può creare venue
         if (currentUser.getRole() != Role.OWNER) {
             throw new AccessDeniedException("Non puoi creare questo locale");
         }
@@ -176,7 +173,7 @@ public class VenueServiceImpl implements VenueService {
         User currentUser = currentUserService.getCurrentUser();
 
         // SOLO ADMIN
-        if (!currentUser.getRole().name().equals("ADMIN")) {
+        if (currentUser.getRole() != Role.ADMIN) {
             throw new AccessDeniedException("Non puoi modificare questo locale");
         }
 

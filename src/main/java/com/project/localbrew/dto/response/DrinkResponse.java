@@ -20,6 +20,8 @@ public class DrinkResponse {
 
     private DrinkCategory category;
 
+    private String imageUri;
+
     private Double abv;
 
     private String origin;

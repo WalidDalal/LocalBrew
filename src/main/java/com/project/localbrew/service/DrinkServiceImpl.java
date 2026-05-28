@@ -1,6 +1,7 @@
 package com.project.localbrew.service;
 
 import com.project.localbrew.entity.Drink;
+import com.project.localbrew.entity.DrinkCategory;
 import com.project.localbrew.exception.DrinkNotFoundException;
 import com.project.localbrew.repository.DrinkRepository;
 import jakarta.transaction.Transactional;
@@ -168,5 +169,14 @@ public class DrinkServiceImpl implements DrinkService {
         if (updatedDrink.getOrigin() != null && !updatedDrink.getOrigin().isBlank()) {
             existingDrink.setOrigin(updatedDrink.getOrigin());
         }
+    }
+
+    @Transactional(Transactional.TxType.SUPPORTS)
+    @Override
+    public List<Drink> findByCategories(List<DrinkCategory> categories) {
+        if (categories == null || categories.isEmpty()) {
+            throw new IllegalArgumentException("Lista categorie non può essere vuota");
+        }
+        return drinkRepository.findByCategoryIn(categories);
     }
 }

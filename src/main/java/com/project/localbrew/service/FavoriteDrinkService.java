@@ -8,11 +8,10 @@ import java.util.UUID;
 public interface FavoriteDrinkService {
     FavoriteDrink saveFavoriteDrink(FavoriteDrink favoriteDrink);
 
-    List<FavoriteDrink> findAllFavoriteDrinks();
+    List<FavoriteDrink> findAllByUserId(UUID userId);
 
     FavoriteDrink findFavoriteDrinkById(UUID id);
 
-    FavoriteDrink updateFavoriteDrinkById(FavoriteDrink favoriteDrink, UUID id);
-
     void deleteFavoriteDrinkById(UUID id);
+    void deleteFavoriteDrinkByUserIdAndDrinkId(UUID userId, UUID drinkId);
 }

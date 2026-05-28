@@ -2,6 +2,7 @@ package com.project.localbrew.service;
 
 import com.project.localbrew.dto.request.UserUpdateRequest;
 import com.project.localbrew.dto.response.UserResponse;
+import com.project.localbrew.entity.Role;
 import com.project.localbrew.entity.User;
 import com.project.localbrew.repository.UserRepository;
 import jakarta.transaction.Transactional;
@@ -198,6 +199,22 @@ public class UserServiceImpl implements UserService {
         }
 
         return userRepository.save(existingUser);
+    }
+
+    @Transactional
+    @Override
+    public UserResponse updateUserRole(UUID id, Role role) {
+        if (role == null) {
+            throw new IllegalArgumentException("Role non puo essere null");
+        }
+        if (role == Role.ADMIN) {
+            throw new IllegalArgumentException("Non puoi assegnare il ruolo admin da questo endpoint");
+        }
+
+        User existingUser = findById(id);
+        existingUser.setRole(role);
+
+        return toResponse(userRepository.save(existingUser));
     }
 
     @Transactional

@@ -37,6 +37,9 @@ public class FavoriteDrinkServiceImpl implements FavoriteDrinkService {
         drinkRepository.findById(favoriteDrink.getDrink().getId())
                 .orElseThrow(() -> new EntityNotFoundException("Drink non trovato"));
 
+        userRepository.findById(favoriteDrink.getUser().getId())
+                .orElseThrow(() -> new EntityNotFoundException("User non trovato"));
+
         boolean exists = favoriteDrinkRepository.existsByUserIdAndDrinkId(favoriteDrink.getUser().getId(), favoriteDrink.getDrink().getId());
 
         if (exists) {
@@ -47,8 +50,8 @@ public class FavoriteDrinkServiceImpl implements FavoriteDrinkService {
     }
 
     @Override
-    public List<FavoriteDrink> findAllFavoriteDrinks() {
-        return favoriteDrinkRepository.findAll();
+    public List<FavoriteDrink> findAllByUserId(UUID userId) {
+        return favoriteDrinkRepository.findAllByUserId(userId);
     }
 
     @Override
@@ -62,35 +65,11 @@ public class FavoriteDrinkServiceImpl implements FavoriteDrinkService {
 
     @Override
     @Transactional
-    public FavoriteDrink updateFavoriteDrinkById(FavoriteDrink favoriteDrink, UUID id) {
-        if (favoriteDrink == null) {
-            throw new IllegalArgumentException("FavoriteDrink nullo");
-        }
-
-        if (id == null) {
-            throw new IllegalArgumentException("Id nullo");
-        }
-
-        FavoriteDrink savedFavoriteDrink = favoriteDrinkRepository.findById(id)
-                .orElseThrow(() -> new EntityNotFoundException("FavoriteDrink non trovato con id: " + id));
-
-
-        if (favoriteDrink.getDrink() != null) {
-            Drink drink = findDrinkInsideFavoriteDrink(favoriteDrink);
-            savedFavoriteDrink.setDrink(drink);
-        }
-
-        if (favoriteDrink.getUser() != null) {
-            User user = findUserInsideFavoriteDrink(favoriteDrink);
-            savedFavoriteDrink.setUser(user);
-        }
-
-        return favoriteDrinkRepository.save(savedFavoriteDrink);
-    }
-
-    @Override
     public void deleteFavoriteDrinkById(UUID id) {
-
+        if (id == null) throw new IllegalArgumentException("Id nullo");
+        if (!favoriteDrinkRepository.existsById(id))
+            throw new EntityNotFoundException("FavoriteDrink non trovato con id: " + id);
+        favoriteDrinkRepository.deleteById(id);
     }
 
     private User findUserInsideFavoriteDrink(FavoriteDrink favoriteDrink) {
@@ -101,5 +80,14 @@ public class FavoriteDrinkServiceImpl implements FavoriteDrinkService {
     private Drink findDrinkInsideFavoriteDrink(FavoriteDrink favoriteDrink) {
         return drinkRepository.findById(favoriteDrink.getDrink().getId())
                 .orElseThrow(() -> new EntityNotFoundException("Drink non trovato con id: " + favoriteDrink.getDrink().getId()));
+    }
+    @Override
+    @Transactional
+    public void deleteFavoriteDrinkByUserIdAndDrinkId(UUID userId, UUID drinkId) {
+        FavoriteDrink favoriteDrink = favoriteDrinkRepository
+                .findByUserIdAndDrinkId(userId, drinkId)
+                .orElseThrow(() -> new EntityNotFoundException(
+                        "Preferito non trovato per drinkId: " + drinkId));
+        favoriteDrinkRepository.deleteById(favoriteDrink.getId());
     }
 }

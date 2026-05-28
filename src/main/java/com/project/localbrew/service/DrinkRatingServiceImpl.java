@@ -1,6 +1,7 @@
 package com.project.localbrew.service;
 
 import com.project.localbrew.entity.DrinkRating;
+import com.project.localbrew.entity.Role;
 import com.project.localbrew.entity.User;
 import com.project.localbrew.repository.DrinkRatingRepository;
 import com.project.localbrew.repository.DrinkRepository;
@@ -54,7 +55,18 @@ public class DrinkRatingServiceImpl implements DrinkRatingService {
     }
 
     @Override
+    public List<DrinkRating> findAllDrinkRatingsByDrinkId(UUID id) {
+        if (id == null) {
+            throw new IllegalArgumentException("ID nullo");
+        }
+        return drinkRatingRepository.findAllByDrinkId(id);
+    }
+
+    @Override
     public DrinkRating findDrinkRatingById(UUID id) {
+        if (id == null) {
+            throw new IllegalArgumentException("ID nullo");
+        }
         return drinkRatingRepository.findById(id)
                 .orElseThrow(() -> new EntityNotFoundException("DrinkRating non trovato con ID: " + id));
     }
@@ -95,7 +107,7 @@ public class DrinkRatingServiceImpl implements DrinkRatingService {
                 .orElseThrow(() -> new EntityNotFoundException("DrinkRating non trovato con ID: " + id));
 
         User currentUser = currentUserService.getCurrentUser();
-        if (!existing.getUser().getId().equals(currentUser.getId())) {
+        if (!existing.getUser().getId().equals(currentUser.getId()) && currentUser.getRole() != Role.ADMIN) {
             throw new IllegalArgumentException("Non puoi eliminare il rating di un altro utente");
         }
 
@@ -107,5 +119,19 @@ public class DrinkRatingServiceImpl implements DrinkRatingService {
     public List<DrinkRating> findAllDrinkRatingByUserId() {
         User user = currentUserService.getCurrentUser();
         return drinkRatingRepository.findAllByUserId(user.getId());
+    }
+
+    @Override
+    public double findAverageDrinkRatingByDrinkId(UUID id) {
+        if (id == null) {
+            throw new IllegalArgumentException("ID nullo");
+        }
+
+        List<DrinkRating> drinkRatings = drinkRatingRepository.findAllByDrinkId(id);
+
+        return drinkRatings.stream()
+                .mapToInt(DrinkRating::getRating)
+                .average()
+                .orElse(0.0);
     }
 }

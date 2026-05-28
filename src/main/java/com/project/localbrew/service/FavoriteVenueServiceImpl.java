@@ -1,6 +1,5 @@
 package com.project.localbrew.service;
 
-import com.project.localbrew.dto.response.VenueResponse;
 import com.project.localbrew.entity.FavoriteVenue;
 import com.project.localbrew.entity.User;
 import com.project.localbrew.entity.Venue;

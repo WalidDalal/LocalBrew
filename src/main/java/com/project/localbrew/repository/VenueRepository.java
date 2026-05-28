@@ -14,11 +14,11 @@ public interface VenueRepository extends JpaRepository<Venue, UUID> {
 
     List<Venue> findAllByStatus(VenueStatus venueStatus);
 
-    List<Venue> findAllByCity(String city);
-
-    List<Venue> findAllByType(VenueType venueType);
-
-    List<Venue> findAllByName(String name);
+    List<Venue> findAllByTypeInAndStatus(List<VenueType> types, VenueStatus status);
 
     List<Venue> findAllByNameContainingIgnoreCaseAndStatus(String name, VenueStatus status);
+
+    List<Venue> findAllByCityContainingIgnoreCaseAndStatus(String city, VenueStatus status);
+    
+    List<Venue> findAllByOwnerId(UUID ownerId);
 }

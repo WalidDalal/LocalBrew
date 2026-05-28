@@ -3,7 +3,6 @@ package com.project.localbrew.config;
 import com.project.localbrew.security.JwtAuthenticationFilter;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
-import org.springframework.http.HttpMethod;
 import org.springframework.security.config.annotation.method.configuration.EnableMethodSecurity;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configurers.AbstractHttpConfigurer;
@@ -37,26 +36,13 @@ public class SecurityConfig {
                 .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
 
                 .authorizeHttpRequests(auth -> auth
-
-                        // PUBLIC
-                        .requestMatchers("/api/auth/**", "/api/map/**").permitAll()
-
-                        // VENUES PUBLIC GET
-                        .requestMatchers(HttpMethod.GET, "/api/venues/**", "/api/drinks/**").permitAll()
-
-                        // OWNER
-                        .requestMatchers(HttpMethod.POST, "/api/venues/**").hasRole("OWNER")
-
-                        .requestMatchers(HttpMethod.PATCH, "/api/venues/**").hasRole("OWNER")
-
-                        // ADMIN
-                        .requestMatchers(HttpMethod.DELETE, "/api/venues/**").hasRole("ADMIN")
-
-                        .requestMatchers("/api/admin/**").hasRole("ADMIN")
-
-                        .requestMatchers("/api/owner/**").hasRole("OWNER")
-
-                        .anyRequest().authenticated())
+                        .requestMatchers("/api/v1/auth/**").permitAll()
+                        .requestMatchers("/api/v1/public/**").permitAll()
+                        .requestMatchers("/api/v1/admin/**").hasRole("ADMIN")
+                        .requestMatchers("/api/v1/owner/**").hasAnyRole("OWNER", "ADMIN")
+                        .requestMatchers("/api/v1/user/**").hasAnyRole("USER", "ADMIN")
+                        .anyRequest().authenticated()
+                )
 
                 .addFilterBefore(jwtAuthFilter, UsernamePasswordAuthenticationFilter.class);
 

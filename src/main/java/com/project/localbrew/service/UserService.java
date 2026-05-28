@@ -1,22 +1,30 @@
 package com.project.localbrew.service;
 
+import com.project.localbrew.dto.request.UserUpdateRequest;
+import com.project.localbrew.dto.response.UserResponse;
+import com.project.localbrew.entity.User;
+import jakarta.transaction.Transactional;
+
 import java.util.List;
 import java.util.UUID;
 
-import com.project.localbrew.entity.User;
-
 public interface UserService {
+
 	// CRUD
 	List<User> findAllUsers();
-	User findUserById(UUID id);
+
+	User findById(UUID id);
 
 	User findByEmail(String email);
 
-    User saveUser(User user);
-	User updateUserById(User user, UUID id);
+	User findByUsername(String username);
+
+	User saveUser(User user);
+
+	User updateUser(UUID id, UserUpdateRequest request);
+
 	void deleteUserById(UUID id);
-	
-	// Utility methods
-	User findUserByUsername(String username);
-	User findUserByEmail(String email);
+
+	// Current authenticated user
+	UserResponse getCurrentUser(String email);
 }

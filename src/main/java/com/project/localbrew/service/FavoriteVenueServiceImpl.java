@@ -1,11 +1,13 @@
 package com.project.localbrew.service;
 
+import com.project.localbrew.dto.response.VenueResponse;
 import com.project.localbrew.entity.FavoriteVenue;
 import com.project.localbrew.entity.User;
 import com.project.localbrew.entity.Venue;
 import com.project.localbrew.entity.VenueStatus;
 import com.project.localbrew.exception.DuplicatedResourceException;
 import com.project.localbrew.repository.FavoriteVenueRepository;
+import com.project.localbrew.repository.VenueRepository;
 import com.project.localbrew.security.CurrentUserService;
 import jakarta.persistence.EntityNotFoundException;
 import jakarta.transaction.Transactional;
@@ -18,22 +20,22 @@ import java.util.UUID;
 @Transactional
 public class FavoriteVenueServiceImpl implements  FavoriteVenueService{
     private final FavoriteVenueRepository favoriteVenueRepository;
-    private final VenueService venueService;
+    private final VenueRepository venueRepository;
     private final CurrentUserService currentUserService;
 
-    public FavoriteVenueServiceImpl(FavoriteVenueRepository favoriteVenueRepository, VenueService venueService, CurrentUserService currentUserService) {
+    public FavoriteVenueServiceImpl(FavoriteVenueRepository favoriteVenueRepository, VenueRepository venueRepository, CurrentUserService currentUserService) {
         this.favoriteVenueRepository = favoriteVenueRepository;
-        this.venueService = venueService;
+        this.venueRepository = venueRepository;
         this.currentUserService = currentUserService;
     }
 
     @Override
     public FavoriteVenue saveFavoriteVenue(UUID venueId) {
         if(venueId == null)
-            throw new EntityNotFoundException("VenueId nullo");
+            throw new IllegalArgumentException("VenueId nullo");
 
         User user = currentUserService.getCurrentUser();
-        Venue venue = venueService.findVenueById(venueId);
+        Venue venue = venueRepository.findById(venueId).orElseThrow(() -> new EntityNotFoundException("Negozio non trovato"));
 
         if (venue.getStatus() != VenueStatus.ACTIVE) {
             throw new IllegalArgumentException("Puoi aggiungere ai preferiti solo locali attivi");
@@ -58,7 +60,7 @@ public class FavoriteVenueServiceImpl implements  FavoriteVenueService{
     }
 
     @Override
-    public FavoriteVenue findFavoriteVenuesById(UUID id) {
+    public FavoriteVenue findFavoriteVenueById(UUID id) {
         return favoriteVenueRepository.findById(id).orElseThrow(() -> new EntityNotFoundException("Preferito non trovato"));
     }
 

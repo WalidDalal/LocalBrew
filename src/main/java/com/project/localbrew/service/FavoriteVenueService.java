@@ -8,6 +8,6 @@ import java.util.UUID;
 public interface FavoriteVenueService {
     FavoriteVenue saveFavoriteVenue(UUID venueId);
     List<FavoriteVenue> findMyFavoriteVenues();
-    FavoriteVenue findFavoriteVenuesById(UUID id);
+    FavoriteVenue findFavoriteVenueById(UUID id);
     void deleteFavoriteVenueByVenueId(UUID venueId);
 }

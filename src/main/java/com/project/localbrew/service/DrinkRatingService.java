@@ -10,6 +10,8 @@ public interface DrinkRatingService {
 
     List<DrinkRating> findAllDrinkRating();
 
+    List<DrinkRating> findAllDrinkRatingsByDrinkId(UUID id);
+
     DrinkRating findDrinkRatingById(UUID id);
 
     DrinkRating updateDrinkRatingById(DrinkRating drinkRating, UUID id);
@@ -17,4 +19,6 @@ public interface DrinkRatingService {
     void deleteDrinkRatingById(UUID id);
 
     List<DrinkRating> findAllDrinkRatingByUserId();
+
+    double findAverageDrinkRatingByDrinkId(UUID id);
 }

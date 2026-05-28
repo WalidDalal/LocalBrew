@@ -12,7 +12,7 @@ import java.util.List;
 import java.util.UUID;
 
 @RestController
-@RequestMapping("/api/v1/user/favotite-venues")
+@RequestMapping("/api/v1/user/favorite-venues")
 public class FavoriteVenueController {
     private final FavoriteVenueService favoriteVenueService;
 

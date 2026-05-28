@@ -11,7 +11,7 @@ import com.project.localbrew.entity.FavoriteVenue;
 
 @Repository
 public interface FavoriteVenueRepository extends JpaRepository<FavoriteVenue, UUID> {
-    boolean existsByUser_idAndVenue_id(UUID userId, UUID venueId);
+    boolean existsByUser_IdAndVenue_Id(UUID userId, UUID venueId);
     List<FavoriteVenue> findAllByUser_id(UUID userId);
     Optional<FavoriteVenue> findByUser_idAndVenue_id(UUID userId, UUID venueId);
 }

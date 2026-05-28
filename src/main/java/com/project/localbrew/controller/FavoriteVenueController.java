@@ -29,7 +29,7 @@ public class FavoriteVenueController {
 
     @GetMapping
     public ResponseEntity<List<FavoriteVenueResponse>> findMyFavoriteVenues(){
-        List<FavoriteVenueResponse> favoriteVenues = favoriteVenueService.findByFavoriteVenues()
+        List<FavoriteVenueResponse> favoriteVenues = favoriteVenueService.findMyFavoriteVenues()
                 .stream()
                 .map(this::toResponse)
                 .toList();

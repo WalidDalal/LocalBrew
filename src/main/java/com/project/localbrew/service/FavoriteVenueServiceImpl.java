@@ -4,6 +4,7 @@ import com.project.localbrew.entity.FavoriteVenue;
 import com.project.localbrew.entity.User;
 import com.project.localbrew.entity.Venue;
 import com.project.localbrew.exception.DrinkNotFoundException;
+import com.project.localbrew.exception.DuplicatedResourceException;
 import com.project.localbrew.repository.FavoriteVenueRepository;
 import com.project.localbrew.security.CurrentUserService;
 import jakarta.persistence.EntityNotFoundException;
@@ -29,9 +30,12 @@ public class FavoriteVenueServiceImpl implements  FavoriteVenueService{
     public FavoriteVenue saveFavoriteVenue(UUID venueId) {
         if(venueId == null)
             throw new EntityNotFoundException("VenueId nullo");
+
         User user = currentUserService.getCurrentUser();
         Venue venue = venueService.findVenueById(venueId);
-        LocalDateTime savedAt = LocalDateTime.now();
+
+        if(favoriteVenueRepository.existsByUser_IdAndVenue_Id(user.getId(), venueId))
+            throw new DuplicatedResourceException("Locale già presente nei preferiti");
 
         FavoriteVenue favoriteVenue = FavoriteVenue.builder()
                 .user(user)
@@ -42,7 +46,7 @@ public class FavoriteVenueServiceImpl implements  FavoriteVenueService{
     }
 
     @Override
-    public List<FavoriteVenue> findByFavoriteVenues() {
+    public List<FavoriteVenue> findMyFavoriteVenues() {
         User user = currentUserService.getCurrentUser();
 
         return favoriteVenueRepository.findAllByUser_id(user.getId());

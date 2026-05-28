@@ -7,7 +7,7 @@ import java.util.UUID;
 
 public interface FavoriteVenueService {
     FavoriteVenue saveFavoriteVenue(UUID venueId);
-    List<FavoriteVenue> findByFavoriteVenues();
+    List<FavoriteVenue> findMyFavoriteVenues();
     FavoriteVenue findByFavoriteVenuesId(UUID id);
     void deleteFavoriteVenueByVenueId(UUID venueId);
 }

@@ -1,122 +1,255 @@
 package com.project.localbrew.service;
 
+import com.project.localbrew.dto.request.VenueReviewRequest;
+import com.project.localbrew.dto.response.VenueReviewResponse;
+import com.project.localbrew.entity.User;
+import com.project.localbrew.entity.Venue;
 import com.project.localbrew.entity.VenueReview;
+import com.project.localbrew.repository.UserRepository;
+import com.project.localbrew.repository.VenueRepository;
 import com.project.localbrew.repository.VenueReviewRepository;
 import jakarta.transaction.Transactional;
 import org.springframework.stereotype.Service;
 
+import java.time.LocalDateTime;
 import java.util.List;
-import java.util.Optional;
 import java.util.UUID;
 
 @Service
-public class VenueReviewServiceImpl implements VenueReviewService {
+public class VenueReviewServiceImpl
+        implements VenueReviewService {
 
     private final VenueReviewRepository venueReviewRepository;
+    private final UserRepository userRepository;
+    private final VenueRepository venueRepository;
 
-    public VenueReviewServiceImpl(VenueReviewRepository venueReviewRepository) {
+    public VenueReviewServiceImpl(
+            VenueReviewRepository venueReviewRepository,
+            UserRepository userRepository,
+            VenueRepository venueRepository
+    ) {
         this.venueReviewRepository = venueReviewRepository;
+        this.userRepository = userRepository;
+        this.venueRepository = venueRepository;
     }
 
     @Override
-    public List<VenueReview> findAllReviews() {
-        return venueReviewRepository.findAll();
+    public List<VenueReviewResponse> findAllReviews() {
+
+        return venueReviewRepository.findAll()
+                .stream()
+                .map(this::toResponse)
+                .toList();
     }
 
     @Override
-    public VenueReview findReviewById(UUID id) {
+    public VenueReviewResponse findReviewById(UUID id) {
 
         if (id == null) {
-            throw new IllegalArgumentException("ID non può essere null");
+            throw new IllegalArgumentException(
+                    "ID non può essere null");
         }
 
-        Optional<VenueReview> review = venueReviewRepository.findById(id);
+        VenueReview review =
+                venueReviewRepository.findById(id)
+                        .orElseThrow(() ->
+                                new IllegalArgumentException(
+                                        "Recensione non trovata"));
 
-        return review.orElseThrow(() ->
-                new IllegalArgumentException("Review non trovata con ID: " + id));
+        return toResponse(review);
     }
 
     @Transactional
     @Override
-    public VenueReview saveReview(VenueReview review) {
+    public VenueReviewResponse saveReview(
+            VenueReviewRequest request,
+            String username
+    ) {
 
-        if (review == null) {
-            throw new IllegalArgumentException("Review non può essere null");
+        if (request == null) {
+            throw new IllegalArgumentException(
+                    "La review request non può essere null");
         }
 
-        if (review.getRating() == null ||
-                review.getRating() < 1 ||
-                review.getRating() > 5) {
-            throw new IllegalArgumentException("Rating deve essere tra 1 e 5");
+        User user = userRepository.findByEmail(username)
+                .orElseThrow(() ->
+                        new IllegalArgumentException(
+                                "Utente non trovato"));
+
+        Venue venue = venueRepository.findById(
+                        request.getVenueId())
+                .orElseThrow(() ->
+                        new IllegalArgumentException(
+                                "Venue non trovata"));
+
+        boolean alreadyReviewed =
+                venueReviewRepository
+                        .existsByUserId_IdAndVenueId_Id(
+                                user.getId(),
+                                venue.getId()
+                        );
+
+        if (alreadyReviewed) {
+
+            throw new IllegalArgumentException(
+                    "Hai già recensito questa venue");
         }
 
-        if (review.getUserId() == null || review.getVenueId() == null) {
-            throw new IllegalArgumentException("User e Venue sono obbligatori");
-        }
+        VenueReview review = VenueReview.builder()
+                .rating(request.getRating())
+                .comment(request.getComment())
+                .createdAt(LocalDateTime.now())
+                .user(user)
+                .venue(venue)
+                .build();
 
-        return venueReviewRepository.save(review);
+        VenueReview savedReview =
+                venueReviewRepository.save(review);
+
+        return toResponse(savedReview);
     }
 
     @Transactional
     @Override
-    public VenueReview updateReviewById(VenueReview review, UUID id) {
+    public VenueReviewResponse updateReviewById(
+            VenueReviewRequest request,
+            UUID id,
+            String username
+    ) {
 
         if (id == null) {
-            throw new IllegalArgumentException("ID non può essere null");
+            throw new IllegalArgumentException(
+                    "ID non può essere null");
         }
 
-        if (review == null) {
-            throw new IllegalArgumentException("Review non può essere null");
+        if (request == null) {
+            throw new IllegalArgumentException(
+                    "La request non può essere null");
         }
 
-        VenueReview existing = venueReviewRepository.findById(id)
-                .orElseThrow(() ->
-                        new IllegalArgumentException("Review non trovata con ID: " + id));
+        VenueReview existingReview =
+                venueReviewRepository.findById(id)
+                        .orElseThrow(() ->
+                                new IllegalArgumentException(
+                                        "Recensione non trovata"));
 
-        if (review.getRating() != null &&
-                review.getRating() >= 1 &&
-                review.getRating() <= 5) {
-            existing.setRating(review.getRating());
+        // Ownership check
+        if (!existingReview.getUser()
+                .getEmail()
+                .equals(username)) {
+
+            throw new IllegalArgumentException(
+                    "Non puoi modificare recensioni di altri utenti");
         }
 
-        if (review.getComment() != null && !review.getComment().isBlank()) {
-            existing.setComment(review.getComment());
+        // Rating
+        if (request.getRating() != null &&
+                request.getRating() >= 1 &&
+                request.getRating() <= 5) {
+
+            existingReview.setRating(
+                    request.getRating());
         }
 
-        return venueReviewRepository.save(existing);
+        // Comment
+        if (request.getComment() != null &&
+                !request.getComment().isBlank()) {
+
+            existingReview.setComment(
+                    request.getComment());
+        }
+
+        VenueReview updatedReview =
+                venueReviewRepository.save(existingReview);
+
+        return toResponse(updatedReview);
     }
 
+    @Transactional
     @Override
-    public void deleteReviewById(UUID id) {
+    public void deleteReview(
+            UUID id,
+            String username
+    ) {
 
         if (id == null) {
-            throw new IllegalArgumentException("ID non può essere null");
+            throw new IllegalArgumentException(
+                    "ID non può essere null");
         }
 
-        VenueReview review = venueReviewRepository.findById(id)
-                .orElseThrow(() ->
-                        new IllegalArgumentException("Review non trovata con ID: " + id));
+        VenueReview review =
+                venueReviewRepository.findById(id)
+                        .orElseThrow(() ->
+                                new IllegalArgumentException(
+                                        "Recensione non trovata"));
+
+        // Ownership check
+        if (!review.getUser()
+                .getEmail()
+                .equals(username)) {
+
+            throw new IllegalArgumentException(
+                    "Non puoi eliminare recensioni di altri utenti");
+        }
 
         venueReviewRepository.delete(review);
     }
 
     @Override
-    public List<VenueReview> findReviewsByVenueId(UUID venueId) {
+    public List<VenueReviewResponse> findReviewsByVenueId(
+            UUID venueId
+    ) {
 
         if (venueId == null) {
-            throw new IllegalArgumentException("Venue ID non può essere null");
+            throw new IllegalArgumentException(
+                    "Venue ID non può essere null");
         }
 
-        return venueReviewRepository.findByVenueId_Id(venueId);
+        return venueReviewRepository
+                .findByVenueId_Id(venueId)
+                .stream()
+                .map(this::toResponse)
+                .toList();
     }
 
     @Override
-    public List<VenueReview> findReviewsByUserId(UUID userId) {
+    public List<VenueReviewResponse> findReviewsByUserId(
+            UUID userId
+    ) {
 
         if (userId == null) {
-            throw new IllegalArgumentException("User ID non può essere null");
+            throw new IllegalArgumentException(
+                    "User ID non può essere null");
         }
 
-        return venueReviewRepository.findByUserId_Id(userId);
+        return venueReviewRepository
+                .findByUserId_Id(userId)
+                .stream()
+                .map(this::toResponse)
+                .toList();
+    }
+
+    private VenueReviewResponse toResponse(
+            VenueReview review
+    ) {
+
+        return VenueReviewResponse.builder()
+                .id(review.getId())
+                .rating(review.getRating())
+                .comment(review.getComment())
+                .createdAt(review.getCreatedAt())
+                .username(
+                        review.getUser() != null
+                                ? review.getUser()
+                                .getUsername()
+                                : null
+                )
+                .venueName(
+                        review.getVenue() != null
+                                ? review.getVenue()
+                                .getName()
+                                : null
+                )
+                .build();
     }
 }

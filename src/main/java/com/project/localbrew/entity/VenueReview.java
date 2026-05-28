@@ -3,7 +3,7 @@ package com.project.localbrew.entity;
 import jakarta.persistence.*;
 import lombok.*;
 
-import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.util.UUID;
 
 @Getter
@@ -12,8 +12,14 @@ import java.util.UUID;
 @AllArgsConstructor
 @NoArgsConstructor
 @Entity
-@Table(name = "venue_reviews")
+@Table(
+        name = "venue_reviews",
+        uniqueConstraints = {
+                @UniqueConstraint(columnNames = {"user_id", "venue_id"})
+        }
+)
 public class VenueReview {
+
     @Id
     @GeneratedValue(strategy = GenerationType.UUID)
     private UUID id;
@@ -24,14 +30,14 @@ public class VenueReview {
     @Column(length = 500)
     private String comment;
 
-    @Column(nullable = false, name = "create_at")
-    private LocalDate createdAt;
+    @Column(nullable = false, name = "created_at")
+    private LocalDateTime createdAt;
 
     @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "user_id")
-    private User userId;
+    @JoinColumn(name = "user_id", nullable = false)
+    private User user;
 
     @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "venue_id")
-    private Venue venueId;
+    @JoinColumn(name = "venue_id", nullable = false)
+    private Venue venue;
 }

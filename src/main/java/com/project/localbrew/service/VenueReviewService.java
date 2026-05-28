@@ -1,6 +1,7 @@
 package com.project.localbrew.service;
 
-import com.project.localbrew.entity.VenueReview;
+import com.project.localbrew.dto.request.VenueReviewRequest;
+import com.project.localbrew.dto.response.VenueReviewResponse;
 
 import java.util.List;
 import java.util.UUID;
@@ -8,18 +9,33 @@ import java.util.UUID;
 public interface VenueReviewService {
 
     // CRUD
-    List<VenueReview> findAllReviews();
 
-    VenueReview findReviewById(UUID id);
+    List<VenueReviewResponse> findAllReviews();
 
-    VenueReview saveReview(VenueReview review);
+    VenueReviewResponse findReviewById(UUID id);
 
-    VenueReview updateReviewById(VenueReview review, UUID id);
+    VenueReviewResponse saveReview(
+            VenueReviewRequest request,
+            String username
+    );
 
-    void deleteReviewById(UUID id);
+    VenueReviewResponse updateReviewById(
+            VenueReviewRequest request,
+            UUID id,
+            String username
+    );
 
+    void deleteReview(
+            UUID id,
+            String username
+    );
     // Utility
-    List<VenueReview> findReviewsByVenueId(UUID venueId);
 
-    List<VenueReview> findReviewsByUserId(UUID userId);
+    List<VenueReviewResponse> findReviewsByVenueId(
+            UUID venueId
+    );
+
+    List<VenueReviewResponse> findReviewsByUserId(
+            UUID userId
+    );
 }

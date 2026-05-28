@@ -14,4 +14,6 @@ public interface VenueReviewRepository extends JpaRepository<VenueReview, UUID> 
     List<VenueReview> findByVenueId_Id(UUID venueId);
 
     List<VenueReview> findByUserId_Id(UUID userId);
+
+    boolean existsByUserId_IdAndVenueId_Id(UUID id, UUID id1);
 }

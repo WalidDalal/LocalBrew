@@ -8,34 +8,17 @@ import java.util.UUID;
 
 public interface VenueReviewService {
 
-    // CRUD
-
     List<VenueReviewResponse> findAllReviews();
 
     VenueReviewResponse findReviewById(UUID id);
 
-    VenueReviewResponse saveReview(
-            VenueReviewRequest request,
-            String username
-    );
+    List<VenueReviewResponse> findReviewsByVenueId(UUID venueId);
 
-    VenueReviewResponse updateReviewById(
-            VenueReviewRequest request,
-            UUID id,
-            String username
-    );
+    List<VenueReviewResponse> findMyReviews();
 
-    void deleteReview(
-            UUID id,
-            String username
-    );
-    // Utility
+    VenueReviewResponse saveReview(VenueReviewRequest request);
 
-    List<VenueReviewResponse> findReviewsByVenueId(
-            UUID venueId
-    );
+    VenueReviewResponse updateReviewById(VenueReviewRequest request, UUID id);
 
-    List<VenueReviewResponse> findReviewsByUserId(
-            UUID userId
-    );
+    void deleteReviewById(UUID id);
 }

@@ -37,6 +37,13 @@ public class FavoriteVenueController {
         return ResponseEntity.ok(favoriteVenues);
     }
 
+    @DeleteMapping("/{venueId}")
+    public ResponseEntity<Void> deleteFavoriteVenue(@PathVariable @NotNull(message = "Venue id non può essere nullo") UUID venueId){
+        favoriteVenueService.deleteFavoriteVenueByVenueId(venueId);
+
+        return ResponseEntity.noContent().build();
+    }
+
     private FavoriteVenueResponse toResponse(FavoriteVenue favoriteVenue) {
         Venue venue = favoriteVenue.getVenue();
 

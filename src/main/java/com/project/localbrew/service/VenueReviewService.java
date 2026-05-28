@@ -12,13 +12,13 @@ public interface VenueReviewService {
 
     VenueReviewResponse findReviewById(UUID id);
 
-    List<VenueReviewResponse> findReviewsByVenueId(UUID venueId);
-
-    List<VenueReviewResponse> findMyReviews();
-
     VenueReviewResponse saveReview(VenueReviewRequest request);
 
     VenueReviewResponse updateReviewById(VenueReviewRequest request, UUID id);
 
-    void deleteReviewById(UUID id);
+    void deleteReview(UUID id);
+
+    List<VenueReviewResponse> findReviewsByVenueId(UUID venueId);
+
+    List<VenueReviewResponse> findReviewsByUserId(UUID userId);
 }

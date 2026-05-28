@@ -24,16 +24,9 @@ public class VenueReviewController {
         this.venueReviewService = venueReviewService;
     }
 
-    @GetMapping("/admin/venue-reviews")
+    @GetMapping("/admin/reviews")
     public ResponseEntity<List<VenueReviewResponse>> findAllReviews() {
         return ResponseEntity.ok(venueReviewService.findAllReviews());
-    }
-
-    @GetMapping("/admin/venue-reviews/{id}")
-    public ResponseEntity<VenueReviewResponse> findReviewById(
-            @PathVariable @NotNull(message = "ID non puo essere nullo") UUID id
-    ) {
-        return ResponseEntity.ok(venueReviewService.findReviewById(id));
     }
 
     @GetMapping("/public/venues/{venueId}/reviews")
@@ -41,11 +34,6 @@ public class VenueReviewController {
             @PathVariable @NotNull(message = "Venue ID non puo essere nullo") UUID venueId
     ) {
         return ResponseEntity.ok(venueReviewService.findReviewsByVenueId(venueId));
-    }
-
-    @GetMapping("/user/venue-reviews")
-    public ResponseEntity<List<VenueReviewResponse>> findMyReviews() {
-        return ResponseEntity.ok(venueReviewService.findMyReviews());
     }
 
     @PostMapping("/user/venue-reviews")
@@ -64,10 +52,8 @@ public class VenueReviewController {
     }
 
     @DeleteMapping("/user/venue-reviews/{id}")
-    public ResponseEntity<Void> deleteReview(
-            @PathVariable @NotNull(message = "ID non puo essere nullo") UUID id
-    ) {
-        venueReviewService.deleteReviewById(id);
+    public ResponseEntity<Void> deleteReview(@PathVariable @NotNull(message = "ID non puo essere nullo") UUID id) {
+        venueReviewService.deleteReview(id);
         return ResponseEntity.noContent().build();
     }
 }

@@ -1,24 +1,22 @@
 package com.project.localbrew.service;
 
-import com.project.localbrew.entity.DrinkRating;
+import com.project.localbrew.dto.request.DrinkRatingRequest;
+import com.project.localbrew.dto.response.DrinkRatingResponse;
 
 import java.util.List;
 import java.util.UUID;
 
 public interface DrinkRatingService {
-    DrinkRating saveDrinkRating(DrinkRating drinkRating);
 
-    List<DrinkRating> findAllDrinkRating();
+    List<DrinkRatingResponse> findAllDrinkRatingsByDrinkId(UUID drinkId);
 
-    List<DrinkRating> findAllDrinkRatingsByDrinkId(UUID id);
+    double findAverageDrinkRatingByDrinkId(UUID drinkId);
 
-    DrinkRating findDrinkRatingById(UUID id);
+    List<DrinkRatingResponse> findAllDrinkRatingsByCurrentUser();
 
-    DrinkRating updateDrinkRatingById(DrinkRating drinkRating, UUID id);
+    DrinkRatingResponse saveDrinkRating(UUID drinkId, DrinkRatingRequest request);
+
+    DrinkRatingResponse updateDrinkRatingById(UUID id, DrinkRatingRequest request);
 
     void deleteDrinkRatingById(UUID id);
-
-    List<DrinkRating> findAllDrinkRatingByUserId();
-
-    double findAverageDrinkRatingByDrinkId(UUID id);
 }

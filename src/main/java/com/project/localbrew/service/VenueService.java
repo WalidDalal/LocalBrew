@@ -26,8 +26,10 @@ public interface VenueService {
 
     VenueResponse findVenueById(UUID id);
 
-    List<VenueResponse> findAllVenuesByCurrentOwner();
+    VenueResponse findActiveVenueById(UUID id);
 
+    List<VenueResponse> findAllVenuesByCurrentOwner();
+  
     VenueResponse saveVenue(VenueRequest request);
 
     VenueResponse updateVenueById(VenueRequest request, UUID id);
@@ -40,3 +42,4 @@ public interface VenueService {
 
     void deleteVenueById(UUID id);
 }
+

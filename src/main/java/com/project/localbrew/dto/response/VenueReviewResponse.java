@@ -11,16 +11,10 @@ import java.util.UUID;
 @AllArgsConstructor
 @Builder
 public class VenueReviewResponse {
-
     private UUID id;
-
     private Integer rating;
-
     private String comment;
-
     private LocalDateTime createdAt;
-
     private String username;
-
     private String venueName;
 }

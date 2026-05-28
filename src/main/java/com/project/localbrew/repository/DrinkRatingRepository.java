@@ -12,4 +12,6 @@ public interface DrinkRatingRepository extends JpaRepository<DrinkRating, UUID> 
     boolean existsByUserIdAndDrinkId(UUID userId, UUID drinkId);
 
     List<DrinkRating> findAllByUserId(UUID id);
+
+    List<DrinkRating> findAllByDrinkId(UUID id);
 }

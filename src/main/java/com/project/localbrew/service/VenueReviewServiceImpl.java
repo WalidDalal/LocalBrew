@@ -62,7 +62,7 @@ public class VenueReviewServiceImpl implements VenueReviewService {
         Venue venue = venueRepository.findById(request.getVenueId())
                 .orElseThrow(() -> new EntityNotFoundException("Venue non trovata con ID: " + request.getVenueId()));
 
-        boolean alreadyReviewed = venueReviewRepository.existsByUserId_IdAndVenueId_Id(
+        boolean alreadyReviewed = venueReviewRepository.existsByUserIdAndVenueId(
                 currentUser.getId(),
                 venue.getId()
         );
@@ -133,7 +133,7 @@ public class VenueReviewServiceImpl implements VenueReviewService {
             throw new IllegalArgumentException("Venue ID non puo essere null");
         }
 
-        return venueReviewRepository.findByVenueId_Id(venueId)
+        return venueReviewRepository.findAllByVenueId(venueId)
                 .stream()
                 .map(this::toResponse)
                 .toList();
@@ -145,7 +145,7 @@ public class VenueReviewServiceImpl implements VenueReviewService {
             throw new IllegalArgumentException("User ID non puo essere null");
         }
 
-        return venueReviewRepository.findByUserId_Id(userId)
+        return venueReviewRepository.findAllByUserId(userId)
                 .stream()
                 .map(this::toResponse)
                 .toList();

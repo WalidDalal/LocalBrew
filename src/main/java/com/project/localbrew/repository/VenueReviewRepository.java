@@ -1,19 +1,18 @@
 package com.project.localbrew.repository;
 
-import java.util.List;
-import java.util.UUID;
-
+import com.project.localbrew.entity.VenueReview;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.stereotype.Repository;
 
-import com.project.localbrew.entity.VenueReview;
+import java.util.List;
+import java.util.UUID;
 
 @Repository
 public interface VenueReviewRepository extends JpaRepository<VenueReview, UUID> {
 
-    List<VenueReview> findByVenueId_Id(UUID venueId);
+    boolean existsByUserIdAndVenueId(UUID userId, UUID venueId);
 
-    List<VenueReview> findByUserId_Id(UUID userId);
+    List<VenueReview> findAllByVenueId(UUID venueId);
 
-    boolean existsByUserId_IdAndVenueId_Id(UUID id, UUID id1);
+    List<VenueReview> findAllByUserId(UUID userId);
 }

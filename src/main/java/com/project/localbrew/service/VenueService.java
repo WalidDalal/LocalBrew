@@ -26,15 +26,24 @@ public interface VenueService {
 
     List<Venue> findAllVenuesByCurrentOwner();
 
+<<<<<<< Updated upstream
     Venue saveVenue(Venue venue);
+=======
+    VenueResponse findActiveVenueById(UUID id);
+
+    List<VenueResponse> findAllVenuesByCurrentOwner();
+>>>>>>> Stashed changes
 
     Venue updateVenueById(Venue venue, UUID id);
 
     void deleteVenueById(UUID id);
+<<<<<<< Updated upstream
 
     Venue updateVenueStatus(UUID id, VenueStatus status);
 
     Venue activateVenue(UUID id);
 
     Venue suspendVenue(UUID id);
+=======
+>>>>>>> Stashed changes
 }

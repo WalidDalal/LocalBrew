@@ -62,7 +62,25 @@ public class VenueServiceImpl implements VenueService {
     }
 
     @Override
+<<<<<<< Updated upstream
     public List<Venue> findAllVenuesByCurrentOwner() {
+=======
+    public VenueResponse findActiveVenueById(UUID id) {
+        if (id == null) {
+            throw new IllegalArgumentException("ID non puo essere null");
+        }
+
+        Venue venue = findEntityById(id);
+        if (venue.getStatus() != VenueStatus.ACTIVE) {
+            throw new EntityNotFoundException("Venue non trovato con ID: " + id);
+        }
+
+        return toResponse(venue);
+    }
+
+    @Override
+    public List<VenueResponse> findAllVenuesByCurrentOwner() {
+>>>>>>> Stashed changes
         User owner = currentUserService.getCurrentUser();
 
         return venueRepository.findAllByOwnerId(owner.getId());
@@ -212,4 +230,45 @@ public class VenueServiceImpl implements VenueService {
 
         venueRepository.delete(venue);
     }
+<<<<<<< Updated upstream
 }
+=======
+
+    // -------------------------
+    // Private helpers
+    // -------------------------
+
+    private Venue findEntityById(UUID id) {
+        return venueRepository.findById(id)
+                .orElseThrow(() -> new EntityNotFoundException("Venue non trovato con ID: " + id));
+    }
+
+    private Venue toEntity(VenueRequest request) {
+        return Venue.builder()
+                .name(request.getName())
+                .description(request.getDescription())
+                .city(request.getCity())
+                .address(request.getAddress())
+                .latitude(request.getLatitude())
+                .longitude(request.getLongitude())
+                .type(request.getType())
+                .build();
+    }
+
+    private VenueResponse toResponse(Venue venue) {
+        return VenueResponse.builder()
+                .id(venue.getId())
+                .name(venue.getName())
+                .description(venue.getDescription())
+                .city(venue.getCity())
+                .address(venue.getAddress())
+                .latitude(venue.getLatitude())
+                .longitude(venue.getLongitude())
+                .type(venue.getType())
+                .status(venue.getStatus())
+                .createdAt(venue.getCreatedAt())
+                .ownerUsername(venue.getOwner().getUsername())
+                .build();
+    }
+}
+>>>>>>> Stashed changes

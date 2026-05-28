@@ -214,6 +214,15 @@ public class UserServiceImpl implements UserService {
 
         User user = findByEmail(email);
 
+        return toResponse(user);
+    }
+
+    @Override
+    public UserResponse toResponse(User user) {
+        if (user == null) {
+            throw new IllegalArgumentException("Utente non puo essere null");
+        }
+
         return UserResponse.builder()
                 .id(user.getId())
                 .username(user.getUsername())

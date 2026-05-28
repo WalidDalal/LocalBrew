@@ -74,6 +74,11 @@ public class VenueController {
         return ResponseEntity.ok(venues);
     }
 
+    @GetMapping("/public/venues/{id}")
+    public ResponseEntity<VenueResponse> findActiveVenueById(@PathVariable @NotNull(message = "ID non puo essere nullo") UUID id) {
+        return ResponseEntity.ok(venueService.findActiveVenueById(id));
+    }
+
     @GetMapping("/public/venues/search/city")
     public ResponseEntity<List<VenueResponse>> findAllActiveVenuesByCity(@RequestParam @NotBlank(message = "City non può essere null") String city) {
         List<VenueResponse> venues = venueService.findAllActiveVenuesByCity(city)

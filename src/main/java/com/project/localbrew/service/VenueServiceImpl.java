@@ -1,5 +1,7 @@
 package com.project.localbrew.service;
 
+import com.project.localbrew.dto.request.VenueRequest;
+import com.project.localbrew.dto.response.VenueResponse;
 import com.project.localbrew.entity.*;
 import com.project.localbrew.repository.VenueRepository;
 import com.project.localbrew.security.CurrentUserService;
@@ -24,47 +26,57 @@ public class VenueServiceImpl implements VenueService {
     }
 
     @Override
-    public List<Venue> findAllVenues() {
-        return venueRepository.findAll();
+    public List<VenueResponse> findAllVenues() {
+        return venueRepository.findAll()
+                .stream()
+                .map(this::toResponse)
+                .toList();
     }
 
     @Override
-    public List<Venue> findAllActiveVenuesByCity(String city) {
+    public List<VenueResponse> findAllActiveVenuesByCity(String city) {
         if (city == null || city.isBlank()) {
-            throw new IllegalArgumentException("City nullo");
+            throw new IllegalArgumentException("City non può essere vuota");
         }
-
-        return venueRepository.findAllByCityContainingIgnoreCaseAndStatus(city, VenueStatus.ACTIVE);
+        return venueRepository.findAllByCityContainingIgnoreCaseAndStatus(city, VenueStatus.ACTIVE)
+                .stream()
+                .map(this::toResponse)
+                .toList();
     }
 
     @Override
-    public List<Venue> findAllActiveVenues() {
-        return venueRepository.findAllByStatus(VenueStatus.ACTIVE);
+    public List<VenueResponse> findAllActiveVenues() {
+        return venueRepository.findAllByStatus(VenueStatus.ACTIVE)
+                .stream()
+                .map(this::toResponse)
+                .toList();
     }
 
     @Override
-    public List<Venue> findAllPendingVenues() {
-        return venueRepository.findAllByStatus(VenueStatus.PENDING);
+    public List<VenueResponse> findAllPendingVenues() {
+        return venueRepository.findAllByStatus(VenueStatus.PENDING)
+                .stream()
+                .map(this::toResponse)
+                .toList();
     }
 
     @Override
-    public List<Venue> findAllSuspendedVenues() {
-        return venueRepository.findAllByStatus(VenueStatus.SUSPENDED);
+    public List<VenueResponse> findAllSuspendedVenues() {
+        return venueRepository.findAllByStatus(VenueStatus.SUSPENDED)
+                .stream()
+                .map(this::toResponse)
+                .toList();
     }
 
     @Override
-    public Venue findVenueById(UUID id) {
+    public VenueResponse findVenueById(UUID id) {
         if (id == null) {
-            throw new IllegalArgumentException("ID nullo");
+            throw new IllegalArgumentException("ID non può essere null");
         }
-
-        return venueRepository.findById(id).orElseThrow(() -> new EntityNotFoundException("Venue non trovato con ID: " + id));
+        return toResponse(findEntityById(id));
     }
 
     @Override
-<<<<<<< Updated upstream
-    public List<Venue> findAllVenuesByCurrentOwner() {
-=======
     public VenueResponse findActiveVenueById(UUID id) {
         if (id == null) {
             throw new IllegalArgumentException("ID non puo essere null");
@@ -80,148 +92,140 @@ public class VenueServiceImpl implements VenueService {
 
     @Override
     public List<VenueResponse> findAllVenuesByCurrentOwner() {
->>>>>>> Stashed changes
+ 
         User owner = currentUserService.getCurrentUser();
-
-        return venueRepository.findAllByOwnerId(owner.getId());
+        return venueRepository.findAllByOwnerId(owner.getId())
+                .stream()
+                .map(this::toResponse)
+                .toList();
     }
 
     @Override
-    public List<Venue> findAllActiveVenuesByType(List<VenueType> types) {
+    public List<VenueResponse> findAllActiveVenuesByType(List<VenueType> types) {
         if (types == null || types.isEmpty()) {
-            throw new IllegalArgumentException("Types nullo");
+            throw new IllegalArgumentException("La lista di types non può essere vuota");
         }
-        return venueRepository.findAllByTypeInAndStatus(types, VenueStatus.ACTIVE);
+        return venueRepository.findAllByTypeInAndStatus(types, VenueStatus.ACTIVE)
+                .stream()
+                .map(this::toResponse)
+                .toList();
     }
 
     @Override
-    public List<Venue> findAllActiveVenuesByName(String name) {
+    public List<VenueResponse> findAllActiveVenuesByName(String name) {
         if (name == null || name.isBlank()) {
-            throw new IllegalArgumentException("Name nullo");
+            throw new IllegalArgumentException("Name non può essere vuoto");
         }
-
-        return venueRepository.findAllByNameContainingIgnoreCaseAndStatus(name, VenueStatus.ACTIVE);
+        return venueRepository.findAllByNameContainingIgnoreCaseAndStatus(name, VenueStatus.ACTIVE)
+                .stream()
+                .map(this::toResponse)
+                .toList();
     }
 
     @Override
-    public Venue saveVenue(Venue venue) {
-        // NON deve avere ID nullo
-        if (venue.getId() != null) {
-            throw new IllegalArgumentException("Un nuovo venue non deve avere ID");
+    public VenueResponse saveVenue(VenueRequest request) {
+        if (request == null) {
+            throw new IllegalArgumentException("Request non può essere null");
         }
-        //prende user dal JWT
+
         User currentUser = currentUserService.getCurrentUser();
 
-        // Solo OWNER o ADMIN può creare venue
         if (currentUser.getRole() != Role.OWNER) {
-            throw new AccessDeniedException("Non puoi creare questo locale");
+            throw new AccessDeniedException("Non puoi creare un locale");
         }
 
-        //status automatico
+        Venue venue = toEntity(request);
         venue.setOwner(currentUser);
         venue.setStatus(VenueStatus.PENDING);
 
-        return venueRepository.save(venue);
+        return toResponse(venueRepository.save(venue));
     }
 
     @Override
-    public Venue updateVenueById(Venue venue, UUID id) {
+    public VenueResponse updateVenueById(VenueRequest request, UUID id) {
         if (id == null) {
-            throw new IllegalArgumentException("ID nullo");
+            throw new IllegalArgumentException("ID non può essere null");
+        }
+        if (request == null) {
+            throw new IllegalArgumentException("Request non può essere null");
         }
 
-        if (venue == null) {
-            throw new IllegalArgumentException("Venue nullo");
-        }
-
-        Venue existingVenue = findVenueById(id);
+        Venue existing = findEntityById(id);
         User currentUser = currentUserService.getCurrentUser();
 
-        // SOLO owner del locale o ADMIN
         boolean isAdmin = currentUser.getRole() == Role.ADMIN;
-        boolean isOwnerOfVenue = existingVenue.getOwner().getId().equals(currentUser.getId());
+        boolean isOwnerOfVenue = existing.getOwner().getId().equals(currentUser.getId());
 
         if (!isAdmin && !isOwnerOfVenue) {
             throw new AccessDeniedException("Non puoi modificare questo locale");
         }
 
-        // UPDATE FIELDS
-
-        if (venue.getName() != null && !venue.getName().isBlank()) {
-            existingVenue.setName(venue.getName());
+        if (request.getName() != null && !request.getName().isBlank()) {
+            existing.setName(request.getName());
+        }
+        if (request.getDescription() != null) {
+            existing.setDescription(request.getDescription());
+        }
+        if (request.getCity() != null && !request.getCity().isBlank()) {
+            existing.setCity(request.getCity());
+        }
+        if (request.getAddress() != null && !request.getAddress().isBlank()) {
+            existing.setAddress(request.getAddress());
+        }
+        if (request.getLatitude() != null) {
+            existing.setLatitude(request.getLatitude());
+        }
+        if (request.getLongitude() != null) {
+            existing.setLongitude(request.getLongitude());
+        }
+        if (request.getType() != null) {
+            existing.setType(request.getType());
         }
 
-        if (venue.getDescription() != null) {
-            existingVenue.setDescription(venue.getDescription());
-        }
-
-        if (venue.getCity() != null) {
-            existingVenue.setCity(venue.getCity());
-        }
-
-        if (venue.getAddress() != null && !venue.getAddress().isBlank()) {
-            existingVenue.setAddress(venue.getAddress());
-        }
-
-
-        if (venue.getLatitude() != null) {
-            existingVenue.setLatitude(venue.getLatitude());
-        }
-
-        if (venue.getLongitude() != null) {
-            existingVenue.setLongitude(venue.getLongitude());
-        }
-
-        if (venue.getType() != null) {
-            existingVenue.setType(venue.getType());
-        }
-
-        return venueRepository.save(existingVenue);
+        return toResponse(venueRepository.save(existing));
     }
 
-    public Venue updateVenueStatus(UUID id, VenueStatus status) {
+    @Override
+    public VenueResponse updateVenueStatus(UUID id, VenueStatus status) {
         if (id == null) {
-            throw new IllegalArgumentException("ID nullo");
+            throw new IllegalArgumentException("ID non può essere null");
         }
-
         if (status == null) {
-            throw new IllegalArgumentException("Status venue obbligatorio");
+            throw new IllegalArgumentException("Status non può essere null");
         }
 
         User currentUser = currentUserService.getCurrentUser();
 
-        // SOLO ADMIN
         if (currentUser.getRole() != Role.ADMIN) {
-            throw new AccessDeniedException("Non puoi modificare questo locale");
+            throw new AccessDeniedException("Solo un admin può modificare lo status del locale");
         }
 
-        Venue venue = findVenueById(id);
-
+        Venue venue = findEntityById(id);
         venue.setStatus(status);
 
-        return venueRepository.save(venue);
+        return toResponse(venueRepository.save(venue));
     }
 
-    public Venue activateVenue(UUID id) {
+    @Override
+    public VenueResponse activateVenue(UUID id) {
         return updateVenueStatus(id, VenueStatus.ACTIVE);
     }
 
-    public Venue suspendVenue(UUID id) {
+    @Override
+    public VenueResponse suspendVenue(UUID id) {
         return updateVenueStatus(id, VenueStatus.SUSPENDED);
     }
 
     @Override
     public void deleteVenueById(UUID id) {
         if (id == null) {
-            throw new IllegalArgumentException("ID nullo");
+            throw new IllegalArgumentException("ID non può essere null");
         }
 
-        Venue venue = findVenueById(id);
-
+        Venue venue = findEntityById(id);
         User currentUser = currentUserService.getCurrentUser();
 
-        boolean isAdmin = currentUser.getRole().name().equals("ADMIN");
-
+        boolean isAdmin = currentUser.getRole() == Role.ADMIN;
         boolean isOwnerOfVenue = venue.getOwner().getId().equals(currentUser.getId());
 
         if (!isAdmin && !isOwnerOfVenue) {
@@ -230,9 +234,6 @@ public class VenueServiceImpl implements VenueService {
 
         venueRepository.delete(venue);
     }
-<<<<<<< Updated upstream
-}
-=======
 
     // -------------------------
     // Private helpers
@@ -270,5 +271,7 @@ public class VenueServiceImpl implements VenueService {
                 .ownerUsername(venue.getOwner().getUsername())
                 .build();
     }
+
+
 }
->>>>>>> Stashed changes
+

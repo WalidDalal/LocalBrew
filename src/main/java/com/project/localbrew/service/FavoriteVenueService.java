@@ -1,13 +1,15 @@
 package com.project.localbrew.service;
 
-import com.project.localbrew.entity.FavoriteVenue;
+import com.project.localbrew.dto.response.FavoriteVenueResponse;
 
 import java.util.List;
 import java.util.UUID;
 
 public interface FavoriteVenueService {
-    FavoriteVenue saveFavoriteVenue(UUID venueId);
-    List<FavoriteVenue> findMyFavoriteVenues();
-    FavoriteVenue findFavoriteVenueById(UUID id);
-    void deleteFavoriteVenueByVenueId(UUID venueId);
+
+    List<FavoriteVenueResponse> findAllByCurrentUser();
+
+    FavoriteVenueResponse saveFavoriteVenue(UUID venueId);
+
+    void deleteFavoriteVenue(UUID venueId);
 }

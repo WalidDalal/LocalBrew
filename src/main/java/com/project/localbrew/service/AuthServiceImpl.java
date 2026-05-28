@@ -68,6 +68,10 @@ public class AuthServiceImpl implements AuthService {
             );
         }
 
+        if (!rawPassword.equals(request.getConfirmPassword())) {
+            throw new IllegalArgumentException("Le password non coincidono");
+        }
+
         if (!isUsernameAvailable(username)) {
             throw new IllegalArgumentException("Username già in uso");
         }
@@ -80,7 +84,7 @@ public class AuthServiceImpl implements AuthService {
         User newUser = User.builder()
                 .username(username)
                 .email(email)
-                .passwordHash(encodePassword(rawPassword))
+                .passwordHash(rawPassword)
                 .role(Role.USER)
                 .build();
 

@@ -1,10 +1,9 @@
 package com.project.localbrew.service;
 
+import com.project.localbrew.dto.response.FavoriteVenueResponse;
 import com.project.localbrew.entity.FavoriteVenue;
 import com.project.localbrew.entity.User;
 import com.project.localbrew.entity.Venue;
-import com.project.localbrew.entity.VenueStatus;
-import com.project.localbrew.exception.DuplicatedResourceException;
 import com.project.localbrew.repository.FavoriteVenueRepository;
 import com.project.localbrew.repository.VenueRepository;
 import com.project.localbrew.security.CurrentUserService;
@@ -17,58 +16,80 @@ import java.util.UUID;
 
 @Service
 @Transactional
-public class FavoriteVenueServiceImpl implements  FavoriteVenueService{
+public class FavoriteVenueServiceImpl implements FavoriteVenueService {
+
     private final FavoriteVenueRepository favoriteVenueRepository;
     private final VenueRepository venueRepository;
     private final CurrentUserService currentUserService;
 
-    public FavoriteVenueServiceImpl(FavoriteVenueRepository favoriteVenueRepository, VenueRepository venueRepository, CurrentUserService currentUserService) {
+    public FavoriteVenueServiceImpl(
+            FavoriteVenueRepository favoriteVenueRepository,
+            VenueRepository venueRepository,
+            CurrentUserService currentUserService
+    ) {
         this.favoriteVenueRepository = favoriteVenueRepository;
         this.venueRepository = venueRepository;
         this.currentUserService = currentUserService;
     }
 
     @Override
-    public FavoriteVenue saveFavoriteVenue(UUID venueId) {
-        if(venueId == null)
-            throw new IllegalArgumentException("VenueId nullo");
+    public List<FavoriteVenueResponse> findAllByCurrentUser() {
+        User currentUser = currentUserService.getCurrentUser();
 
-        User user = currentUserService.getCurrentUser();
-        Venue venue = venueRepository.findById(venueId).orElseThrow(() -> new EntityNotFoundException("Negozio non trovato"));
+        return favoriteVenueRepository.findAllByUserId(currentUser.getId())
+                .stream()
+                .map(this::toResponse)
+                .toList();
+    }
 
-        if (venue.getStatus() != VenueStatus.ACTIVE) {
-            throw new IllegalArgumentException("Puoi aggiungere ai preferiti solo locali attivi");
+    @Override
+    public FavoriteVenueResponse saveFavoriteVenue(UUID venueId) {
+        if (venueId == null) {
+            throw new IllegalArgumentException("Venue ID non puo essere null");
         }
 
-        if(favoriteVenueRepository.existsByUser_IdAndVenue_Id(user.getId(), venueId))
-            throw new DuplicatedResourceException("Locale già presente nei preferiti");
+        User currentUser = currentUserService.getCurrentUser();
+        Venue venue = venueRepository.findById(venueId)
+                .orElseThrow(() -> new EntityNotFoundException("Venue non trovata con ID: " + venueId));
+
+        boolean exists = favoriteVenueRepository.existsByUserIdAndVenueId(currentUser.getId(), venue.getId());
+        if (exists) {
+            throw new IllegalArgumentException("Hai gia aggiunto ai preferiti questa venue");
+        }
 
         FavoriteVenue favoriteVenue = FavoriteVenue.builder()
-                .user(user)
+                .user(currentUser)
                 .venue(venue)
                 .build();
 
-        return favoriteVenueRepository.save(favoriteVenue);
+        return toResponse(favoriteVenueRepository.save(favoriteVenue));
     }
 
     @Override
-    public List<FavoriteVenue> findMyFavoriteVenues() {
-        User user = currentUserService.getCurrentUser();
+    public void deleteFavoriteVenue(UUID venueId) {
+        if (venueId == null) {
+            throw new IllegalArgumentException("Venue ID non puo essere null");
+        }
 
-        return favoriteVenueRepository.findAllByUser_Id(user.getId());
-    }
-
-    @Override
-    public FavoriteVenue findFavoriteVenueById(UUID id) {
-        return favoriteVenueRepository.findById(id).orElseThrow(() -> new EntityNotFoundException("Preferito non trovato"));
-    }
-
-    @Override
-    public void deleteFavoriteVenueByVenueId(UUID venueId) {
-        User user = currentUserService.getCurrentUser();
-
-        FavoriteVenue favoriteVenue = favoriteVenueRepository.findByUser_IdAndVenue_Id(user.getId(), venueId).orElseThrow(() -> new EntityNotFoundException("Locale preferito non trovato"));
+        User currentUser = currentUserService.getCurrentUser();
+        FavoriteVenue favoriteVenue = favoriteVenueRepository
+                .findByUserIdAndVenueId(currentUser.getId(), venueId)
+                .orElseThrow(() -> new EntityNotFoundException("Preferito non trovato per venueId: " + venueId));
 
         favoriteVenueRepository.delete(favoriteVenue);
+    }
+
+    private FavoriteVenueResponse toResponse(FavoriteVenue favoriteVenue) {
+        Venue venue = favoriteVenue.getVenue();
+
+        return FavoriteVenueResponse.builder()
+                .id(favoriteVenue.getId())
+                .venueId(venue.getId())
+                .venueName(venue.getName())
+                .address(venue.getAddress())
+                .city(venue.getCity())
+                .venueType(venue.getType())
+                .savedAt(favoriteVenue.getSavedAt())
+                .build();
     }
 }

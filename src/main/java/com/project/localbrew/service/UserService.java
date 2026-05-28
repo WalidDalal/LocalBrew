@@ -25,6 +25,7 @@ public interface UserService {
 
 	void deleteUserById(UUID id);
 
-	// Current authenticated user
 	UserResponse getCurrentUser(String email);
+
+	UserResponse toResponse(User user);
 }

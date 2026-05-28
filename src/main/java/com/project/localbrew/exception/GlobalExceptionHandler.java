@@ -2,6 +2,7 @@ package com.project.localbrew.exception;
 
 import com.project.localbrew.dto.ApiErrorDto;
 import jakarta.persistence.EntityNotFoundException;
+import jakarta.validation.ConstraintViolationException;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -9,6 +10,7 @@ import org.springframework.security.access.AccessDeniedException;
 import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
+import org.springframework.web.method.annotation.MethodArgumentTypeMismatchException;
 
 import java.time.LocalDateTime;
 import java.util.HashMap;
@@ -60,6 +62,28 @@ public class GlobalExceptionHandler {
         apiError.setErrors(errors);
 
         return new ResponseEntity<>(apiError, HttpStatus.BAD_REQUEST);
+    }
+
+    @ExceptionHandler(ConstraintViolationException.class)
+    public ResponseEntity<ApiErrorDto> handleConstraintViolation(ConstraintViolationException ex) {
+        Map<String, String> errors = new HashMap<>();
+
+        ex.getConstraintViolations()
+                .forEach(error -> errors.put(error.getPropertyPath().toString(), error.getMessage()));
+
+        ApiErrorDto apiError = new ApiErrorDto();
+        apiError.setTimestamp(LocalDateTime.now());
+        apiError.setStatus(HttpStatus.BAD_REQUEST.value());
+        apiError.setError(HttpStatus.BAD_REQUEST.getReasonPhrase());
+        apiError.setMessage("Errore di validazione");
+        apiError.setErrors(errors);
+
+        return new ResponseEntity<>(apiError, HttpStatus.BAD_REQUEST);
+    }
+
+    @ExceptionHandler(MethodArgumentTypeMismatchException.class)
+    public ResponseEntity<ApiErrorDto> handleTypeMismatch(MethodArgumentTypeMismatchException ex) {
+        return buildError("Parametro non valido: " + ex.getName(), HttpStatus.BAD_REQUEST);
     }
 
     @ExceptionHandler(Exception.class)

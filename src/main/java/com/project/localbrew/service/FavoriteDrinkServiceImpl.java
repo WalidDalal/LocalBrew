@@ -1,11 +1,12 @@
 package com.project.localbrew.service;
 
+import com.project.localbrew.dto.response.FavoriteDrinkResponse;
 import com.project.localbrew.entity.Drink;
 import com.project.localbrew.entity.FavoriteDrink;
 import com.project.localbrew.entity.User;
 import com.project.localbrew.repository.DrinkRepository;
 import com.project.localbrew.repository.FavoriteDrinkRepository;
-import com.project.localbrew.repository.UserRepository;
+import com.project.localbrew.security.CurrentUserService;
 import jakarta.persistence.EntityNotFoundException;
 import jakarta.transaction.Transactional;
 import org.springframework.stereotype.Service;
@@ -14,80 +15,81 @@ import java.util.List;
 import java.util.UUID;
 
 @Service
+@Transactional
 public class FavoriteDrinkServiceImpl implements FavoriteDrinkService {
+
     private final FavoriteDrinkRepository favoriteDrinkRepository;
-    private final UserRepository userRepository;
     private final DrinkRepository drinkRepository;
+    private final CurrentUserService currentUserService;
 
-    public FavoriteDrinkServiceImpl(FavoriteDrinkRepository favoriteDrinkRepository, UserRepository userRepository, DrinkRepository drinkRepository) {
+    public FavoriteDrinkServiceImpl(
+            FavoriteDrinkRepository favoriteDrinkRepository,
+            DrinkRepository drinkRepository,
+            CurrentUserService currentUserService
+    ) {
         this.favoriteDrinkRepository = favoriteDrinkRepository;
-        this.userRepository = userRepository;
         this.drinkRepository = drinkRepository;
+        this.currentUserService = currentUserService;
     }
 
+    @Override
+    public List<FavoriteDrinkResponse> findAllByCurrentUser() {
+        User currentUser = currentUserService.getCurrentUser();
+
+        return favoriteDrinkRepository.findAllByUserId(currentUser.getId())
+                .stream()
+                .map(this::toResponse)
+                .toList();
+    }
 
     @Override
-    @Transactional
-    public FavoriteDrink saveFavoriteDrink(FavoriteDrink favoriteDrink) {
-        if (favoriteDrink == null) {
-            throw new IllegalArgumentException("FavoriteDrink nullo");
+    public FavoriteDrinkResponse saveFavoriteDrink(UUID drinkId) {
+        if (drinkId == null) {
+            throw new IllegalArgumentException("Drink ID non puo essere null");
         }
 
-        // controllo che non ci sia già questa coppia di id sul DB
-        drinkRepository.findById(favoriteDrink.getDrink().getId())
-                .orElseThrow(() -> new EntityNotFoundException("Drink non trovato"));
+        User currentUser = currentUserService.getCurrentUser();
+        Drink drink = drinkRepository.findById(drinkId)
+                .orElseThrow(() -> new EntityNotFoundException("Drink non trovato con ID: " + drinkId));
 
-        userRepository.findById(favoriteDrink.getUser().getId())
-                .orElseThrow(() -> new EntityNotFoundException("User non trovato"));
-
-        boolean exists = favoriteDrinkRepository.existsByUserIdAndDrinkId(favoriteDrink.getUser().getId(), favoriteDrink.getDrink().getId());
-
+        boolean exists = favoriteDrinkRepository.existsByUserIdAndDrinkId(currentUser.getId(), drink.getId());
         if (exists) {
-            throw new IllegalArgumentException("Hai già aggiunto ai preferiti questo drink");
+            throw new IllegalArgumentException("Hai gia aggiunto ai preferiti questo drink");
         }
 
-        return favoriteDrinkRepository.save(favoriteDrink);
+        FavoriteDrink favoriteDrink = FavoriteDrink.builder()
+                .user(currentUser)
+                .drink(drink)
+                .build();
+
+        return toResponse(favoriteDrinkRepository.save(favoriteDrink));
     }
 
     @Override
-    public List<FavoriteDrink> findAllByUserId(UUID userId) {
-        return favoriteDrinkRepository.findAllByUserId(userId);
-    }
-
-    @Override
-    public FavoriteDrink findFavoriteDrinkById(UUID id) {
-        if (id == null) {
-            throw new IllegalArgumentException("Id nullo");
+    public void deleteFavoriteDrink(UUID drinkId) {
+        if (drinkId == null) {
+            throw new IllegalArgumentException("Drink ID non puo essere null");
         }
-        return favoriteDrinkRepository.findById(id)
-                .orElseThrow(() -> new EntityNotFoundException("FavoriteDrink non trovato con id: " + id));
-    }
 
-    @Override
-    @Transactional
-    public void deleteFavoriteDrinkById(UUID id) {
-        if (id == null) throw new IllegalArgumentException("Id nullo");
-        if (!favoriteDrinkRepository.existsById(id))
-            throw new EntityNotFoundException("FavoriteDrink non trovato con id: " + id);
-        favoriteDrinkRepository.deleteById(id);
-    }
-
-    private User findUserInsideFavoriteDrink(FavoriteDrink favoriteDrink) {
-        return userRepository.findById(favoriteDrink.getUser().getId())
-                .orElseThrow(() -> new EntityNotFoundException("User non trovato con id: " + favoriteDrink.getUser().getId()));
-    }
-
-    private Drink findDrinkInsideFavoriteDrink(FavoriteDrink favoriteDrink) {
-        return drinkRepository.findById(favoriteDrink.getDrink().getId())
-                .orElseThrow(() -> new EntityNotFoundException("Drink non trovato con id: " + favoriteDrink.getDrink().getId()));
-    }
-    @Override
-    @Transactional
-    public void deleteFavoriteDrinkByUserIdAndDrinkId(UUID userId, UUID drinkId) {
+        User currentUser = currentUserService.getCurrentUser();
         FavoriteDrink favoriteDrink = favoriteDrinkRepository
-                .findByUserIdAndDrinkId(userId, drinkId)
-                .orElseThrow(() -> new EntityNotFoundException(
-                        "Preferito non trovato per drinkId: " + drinkId));
-        favoriteDrinkRepository.deleteById(favoriteDrink.getId());
+                .findByUserIdAndDrinkId(currentUser.getId(), drinkId)
+                .orElseThrow(() -> new EntityNotFoundException("Preferito non trovato per drinkId: " + drinkId));
+
+        favoriteDrinkRepository.delete(favoriteDrink);
+    }
+
+    private FavoriteDrinkResponse toResponse(FavoriteDrink favoriteDrink) {
+        Drink drink = favoriteDrink.getDrink();
+
+        return FavoriteDrinkResponse.builder()
+                .id(favoriteDrink.getId())
+                .drinkId(drink.getId())
+                .drinkName(drink.getName())
+                .category(drink.getCategory())
+                .abv(drink.getAbv())
+                .origin(drink.getOrigin())
+                .savedAt(favoriteDrink.getSavedAt())
+                .build();
     }
 }

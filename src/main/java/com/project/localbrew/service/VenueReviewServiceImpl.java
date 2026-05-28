@@ -5,10 +5,12 @@ import com.project.localbrew.dto.response.VenueReviewResponse;
 import com.project.localbrew.entity.User;
 import com.project.localbrew.entity.Venue;
 import com.project.localbrew.entity.VenueReview;
-import com.project.localbrew.repository.UserRepository;
 import com.project.localbrew.repository.VenueRepository;
 import com.project.localbrew.repository.VenueReviewRepository;
+import com.project.localbrew.security.CurrentUserService;
+import jakarta.persistence.EntityNotFoundException;
 import jakarta.transaction.Transactional;
+import org.springframework.security.access.AccessDeniedException;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDateTime;
@@ -16,26 +18,25 @@ import java.util.List;
 import java.util.UUID;
 
 @Service
-public class VenueReviewServiceImpl
-        implements VenueReviewService {
+@Transactional
+public class VenueReviewServiceImpl implements VenueReviewService {
 
     private final VenueReviewRepository venueReviewRepository;
-    private final UserRepository userRepository;
     private final VenueRepository venueRepository;
+    private final CurrentUserService currentUserService;
 
     public VenueReviewServiceImpl(
             VenueReviewRepository venueReviewRepository,
-            UserRepository userRepository,
-            VenueRepository venueRepository
+            VenueRepository venueRepository,
+            CurrentUserService currentUserService
     ) {
         this.venueReviewRepository = venueReviewRepository;
-        this.userRepository = userRepository;
         this.venueRepository = venueRepository;
+        this.currentUserService = currentUserService;
     }
 
     @Override
     public List<VenueReviewResponse> findAllReviews() {
-
         return venueReviewRepository.findAll()
                 .stream()
                 .map(this::toResponse)
@@ -44,212 +45,125 @@ public class VenueReviewServiceImpl
 
     @Override
     public VenueReviewResponse findReviewById(UUID id) {
-
         if (id == null) {
-            throw new IllegalArgumentException(
-                    "ID non può essere null");
+            throw new IllegalArgumentException("ID non puo essere null");
         }
 
-        VenueReview review =
-                venueReviewRepository.findById(id)
-                        .orElseThrow(() ->
-                                new IllegalArgumentException(
-                                        "Recensione non trovata"));
-
-        return toResponse(review);
+        return toResponse(findEntityById(id));
     }
 
-    @Transactional
     @Override
-    public VenueReviewResponse saveReview(
-            VenueReviewRequest request,
-            String username
-    ) {
-
+    public VenueReviewResponse saveReview(VenueReviewRequest request) {
         if (request == null) {
-            throw new IllegalArgumentException(
-                    "La review request non può essere null");
+            throw new IllegalArgumentException("Request non puo essere null");
         }
 
-        User user = userRepository.findByEmail(username)
-                .orElseThrow(() ->
-                        new IllegalArgumentException(
-                                "Utente non trovato"));
+        User currentUser = currentUserService.getCurrentUser();
+        Venue venue = venueRepository.findById(request.getVenueId())
+                .orElseThrow(() -> new EntityNotFoundException("Venue non trovata con ID: " + request.getVenueId()));
 
-        Venue venue = venueRepository.findById(
-                        request.getVenueId())
-                .orElseThrow(() ->
-                        new IllegalArgumentException(
-                                "Venue non trovata"));
-
-        boolean alreadyReviewed =
-                venueReviewRepository
-                        .existsByUserId_IdAndVenueId_Id(
-                                user.getId(),
-                                venue.getId()
-                        );
+        boolean alreadyReviewed = venueReviewRepository.existsByUserId_IdAndVenueId_Id(
+                currentUser.getId(),
+                venue.getId()
+        );
 
         if (alreadyReviewed) {
-
-            throw new IllegalArgumentException(
-                    "Hai già recensito questa venue");
+            throw new IllegalArgumentException("Hai gia recensito questa venue");
         }
 
         VenueReview review = VenueReview.builder()
                 .rating(request.getRating())
                 .comment(request.getComment())
                 .createdAt(LocalDateTime.now())
-                .user(user)
+                .user(currentUser)
                 .venue(venue)
                 .build();
 
-        VenueReview savedReview =
-                venueReviewRepository.save(review);
-
-        return toResponse(savedReview);
+        return toResponse(venueReviewRepository.save(review));
     }
 
-    @Transactional
     @Override
-    public VenueReviewResponse updateReviewById(
-            VenueReviewRequest request,
-            UUID id,
-            String username
-    ) {
-
+    public VenueReviewResponse updateReviewById(VenueReviewRequest request, UUID id) {
         if (id == null) {
-            throw new IllegalArgumentException(
-                    "ID non può essere null");
+            throw new IllegalArgumentException("ID non puo essere null");
         }
-
         if (request == null) {
-            throw new IllegalArgumentException(
-                    "La request non può essere null");
+            throw new IllegalArgumentException("Request non puo essere null");
         }
 
-        VenueReview existingReview =
-                venueReviewRepository.findById(id)
-                        .orElseThrow(() ->
-                                new IllegalArgumentException(
-                                        "Recensione non trovata"));
+        VenueReview existingReview = findEntityById(id);
+        User currentUser = currentUserService.getCurrentUser();
 
-        // Ownership check
-        if (!existingReview.getUser()
-                .getEmail()
-                .equals(username)) {
-
-            throw new IllegalArgumentException(
-                    "Non puoi modificare recensioni di altri utenti");
+        if (!existingReview.getUser().getId().equals(currentUser.getId())) {
+            throw new AccessDeniedException("Non puoi modificare recensioni di altri utenti");
         }
 
-        // Rating
         if (request.getRating() != null &&
                 request.getRating() >= 1 &&
                 request.getRating() <= 5) {
-
-            existingReview.setRating(
-                    request.getRating());
+            existingReview.setRating(request.getRating());
         }
 
-        // Comment
-        if (request.getComment() != null &&
-                !request.getComment().isBlank()) {
-
-            existingReview.setComment(
-                    request.getComment());
+        if (request.getComment() != null) {
+            existingReview.setComment(request.getComment());
         }
 
-        VenueReview updatedReview =
-                venueReviewRepository.save(existingReview);
-
-        return toResponse(updatedReview);
+        return toResponse(venueReviewRepository.save(existingReview));
     }
 
-    @Transactional
     @Override
-    public void deleteReview(
-            UUID id,
-            String username
-    ) {
-
+    public void deleteReview(UUID id) {
         if (id == null) {
-            throw new IllegalArgumentException(
-                    "ID non può essere null");
+            throw new IllegalArgumentException("ID non puo essere null");
         }
 
-        VenueReview review =
-                venueReviewRepository.findById(id)
-                        .orElseThrow(() ->
-                                new IllegalArgumentException(
-                                        "Recensione non trovata"));
+        VenueReview review = findEntityById(id);
+        User currentUser = currentUserService.getCurrentUser();
 
-        // Ownership check
-        if (!review.getUser()
-                .getEmail()
-                .equals(username)) {
-
-            throw new IllegalArgumentException(
-                    "Non puoi eliminare recensioni di altri utenti");
+        if (!review.getUser().getId().equals(currentUser.getId())) {
+            throw new AccessDeniedException("Non puoi eliminare recensioni di altri utenti");
         }
 
         venueReviewRepository.delete(review);
     }
 
     @Override
-    public List<VenueReviewResponse> findReviewsByVenueId(
-            UUID venueId
-    ) {
-
+    public List<VenueReviewResponse> findReviewsByVenueId(UUID venueId) {
         if (venueId == null) {
-            throw new IllegalArgumentException(
-                    "Venue ID non può essere null");
+            throw new IllegalArgumentException("Venue ID non puo essere null");
         }
 
-        return venueReviewRepository
-                .findByVenueId_Id(venueId)
+        return venueReviewRepository.findByVenueId_Id(venueId)
                 .stream()
                 .map(this::toResponse)
                 .toList();
     }
 
     @Override
-    public List<VenueReviewResponse> findReviewsByUserId(
-            UUID userId
-    ) {
-
+    public List<VenueReviewResponse> findReviewsByUserId(UUID userId) {
         if (userId == null) {
-            throw new IllegalArgumentException(
-                    "User ID non può essere null");
+            throw new IllegalArgumentException("User ID non puo essere null");
         }
 
-        return venueReviewRepository
-                .findByUserId_Id(userId)
+        return venueReviewRepository.findByUserId_Id(userId)
                 .stream()
                 .map(this::toResponse)
                 .toList();
     }
 
-    private VenueReviewResponse toResponse(
-            VenueReview review
-    ) {
+    private VenueReview findEntityById(UUID id) {
+        return venueReviewRepository.findById(id)
+                .orElseThrow(() -> new EntityNotFoundException("Recensione non trovata con ID: " + id));
+    }
 
+    private VenueReviewResponse toResponse(VenueReview review) {
         return VenueReviewResponse.builder()
                 .id(review.getId())
                 .rating(review.getRating())
                 .comment(review.getComment())
                 .createdAt(review.getCreatedAt())
-                .username(
-                        review.getUser() != null
-                                ? review.getUser()
-                                .getUsername()
-                                : null
-                )
-                .venueName(
-                        review.getVenue() != null
-                                ? review.getVenue()
-                                .getName()
-                                : null
-                )
+                .username(review.getUser() != null ? review.getUser().getUsername() : null)
+                .venueName(review.getVenue() != null ? review.getVenue().getName() : null)
                 .build();
     }
 }

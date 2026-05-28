@@ -77,7 +77,22 @@ public class VenueServiceImpl implements VenueService {
     }
 
     @Override
+    public VenueResponse findActiveVenueById(UUID id) {
+        if (id == null) {
+            throw new IllegalArgumentException("ID non puo essere null");
+        }
+
+        Venue venue = findEntityById(id);
+        if (venue.getStatus() != VenueStatus.ACTIVE) {
+            throw new EntityNotFoundException("Venue non trovato con ID: " + id);
+        }
+
+        return toResponse(venue);
+    }
+
+    @Override
     public List<VenueResponse> findAllVenuesByCurrentOwner() {
+ 
         User owner = currentUserService.getCurrentUser();
         return venueRepository.findAllByOwnerId(owner.getId())
                 .stream()
@@ -256,4 +271,7 @@ public class VenueServiceImpl implements VenueService {
                 .ownerUsername(venue.getOwner().getUsername())
                 .build();
     }
+
+
 }
+

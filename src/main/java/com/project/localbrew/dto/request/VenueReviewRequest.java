@@ -23,9 +23,6 @@ public class VenueReviewRequest {
     @Max(value = 5, message = "Rating massimo 5")
     private Integer rating;
 
-    @Size(
-            max = 500,
-            message = "Commento massimo 500 caratteri"
-    )
+    @Size(max = 500, message = "Commento massimo 500 caratteri")
     private String comment;
 }

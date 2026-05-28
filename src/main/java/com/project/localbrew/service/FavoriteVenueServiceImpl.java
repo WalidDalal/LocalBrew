@@ -6,6 +6,7 @@ import com.project.localbrew.entity.Venue;
 import com.project.localbrew.exception.DrinkNotFoundException;
 import com.project.localbrew.repository.FavoriteVenueRepository;
 import com.project.localbrew.security.CurrentUserService;
+import jakarta.persistence.EntityNotFoundException;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDateTime;
@@ -27,7 +28,7 @@ public class FavoriteVenueServiceImpl implements  FavoriteVenueService{
     @Override
     public FavoriteVenue saveFavoriteVenue(UUID venueId) {
         if(venueId == null)
-            throw new DrinkNotFoundException("VenueId nullo");
+            throw new EntityNotFoundException("VenueId nullo");
         User user = currentUserService.getCurrentUser();
         Venue venue = venueService.findVenueById(venueId);
         LocalDateTime savedAt = LocalDateTime.now();
@@ -42,16 +43,22 @@ public class FavoriteVenueServiceImpl implements  FavoriteVenueService{
 
     @Override
     public List<FavoriteVenue> findByFavoriteVenues() {
-        return List.of();
+        User user = currentUserService.getCurrentUser();
+
+        return favoriteVenueRepository.findAllByUser_id(user.getId());
     }
 
     @Override
     public FavoriteVenue findByFavoriteVenuesId(UUID id) {
-        return null;
+        return favoriteVenueRepository.findById(id).orElseThrow(() -> new EntityNotFoundException("Preferito non trovato"));
     }
 
     @Override
     public void deleteFavoriteVenueByVenueId(UUID venueId) {
+        User user = currentUserService.getCurrentUser();
 
+        FavoriteVenue favoriteVenue = favoriteVenueRepository.findByUser_idAndVenue_id(user.getId(), venueId).orElseThrow(() -> new EntityNotFoundException("Locale preferito non trovato"));
+
+        favoriteVenueRepository.delete(favoriteVenue);
     }
 }

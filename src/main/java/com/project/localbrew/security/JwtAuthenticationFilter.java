@@ -69,6 +69,9 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
                       "message": "Token JWT non valido o scaduto"
                     }
                     """);
+            return;
         }
+
+        filterChain.doFilter(request, response);
     }
 }

@@ -8,9 +8,7 @@ import com.project.localbrew.service.UserService;
 import jakarta.validation.Valid;
 import org.springframework.http.ResponseEntity;
 import org.springframework.validation.annotation.Validated;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
 @Validated
 @RestController
@@ -43,5 +41,6 @@ public class UserController {
         User currentUser = currentUserService.getCurrentUser();
         userService.deleteUserById(currentUser.getId());
         return ResponseEntity.noContent().build();
-      
+
+    }
 }

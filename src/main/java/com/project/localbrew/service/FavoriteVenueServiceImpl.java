@@ -49,7 +49,7 @@ public class FavoriteVenueServiceImpl implements  FavoriteVenueService{
     public List<FavoriteVenue> findMyFavoriteVenues() {
         User user = currentUserService.getCurrentUser();
 
-        return favoriteVenueRepository.findAllByUser_id(user.getId());
+        return favoriteVenueRepository.findAllByUser_Id(user.getId());
     }
 
     @Override
@@ -61,7 +61,7 @@ public class FavoriteVenueServiceImpl implements  FavoriteVenueService{
     public void deleteFavoriteVenueByVenueId(UUID venueId) {
         User user = currentUserService.getCurrentUser();
 
-        FavoriteVenue favoriteVenue = favoriteVenueRepository.findByUser_idAndVenue_id(user.getId(), venueId).orElseThrow(() -> new EntityNotFoundException("Locale preferito non trovato"));
+        FavoriteVenue favoriteVenue = favoriteVenueRepository.findByUser_IdAndVenue_Id(user.getId(), venueId).orElseThrow(() -> new EntityNotFoundException("Locale preferito non trovato"));
 
         favoriteVenueRepository.delete(favoriteVenue);
     }

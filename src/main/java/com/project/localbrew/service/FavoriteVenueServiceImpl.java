@@ -3,18 +3,19 @@ package com.project.localbrew.service;
 import com.project.localbrew.entity.FavoriteVenue;
 import com.project.localbrew.entity.User;
 import com.project.localbrew.entity.Venue;
-import com.project.localbrew.exception.DrinkNotFoundException;
+import com.project.localbrew.entity.VenueStatus;
 import com.project.localbrew.exception.DuplicatedResourceException;
 import com.project.localbrew.repository.FavoriteVenueRepository;
 import com.project.localbrew.security.CurrentUserService;
 import jakarta.persistence.EntityNotFoundException;
+import jakarta.transaction.Transactional;
 import org.springframework.stereotype.Service;
 
-import java.time.LocalDateTime;
 import java.util.List;
 import java.util.UUID;
 
 @Service
+@Transactional
 public class FavoriteVenueServiceImpl implements  FavoriteVenueService{
     private final FavoriteVenueRepository favoriteVenueRepository;
     private final VenueService venueService;
@@ -33,6 +34,10 @@ public class FavoriteVenueServiceImpl implements  FavoriteVenueService{
 
         User user = currentUserService.getCurrentUser();
         Venue venue = venueService.findVenueById(venueId);
+
+        if (venue.getStatus() != VenueStatus.ACTIVE) {
+            throw new IllegalArgumentException("Puoi aggiungere ai preferiti solo locali attivi");
+        }
 
         if(favoriteVenueRepository.existsByUser_IdAndVenue_Id(user.getId(), venueId))
             throw new DuplicatedResourceException("Locale già presente nei preferiti");
@@ -53,7 +58,7 @@ public class FavoriteVenueServiceImpl implements  FavoriteVenueService{
     }
 
     @Override
-    public FavoriteVenue findByFavoriteVenuesId(UUID id) {
+    public FavoriteVenue findFavoriteVenuesById(UUID id) {
         return favoriteVenueRepository.findById(id).orElseThrow(() -> new EntityNotFoundException("Preferito non trovato"));
     }
 

@@ -5,6 +5,7 @@ import com.project.localbrew.entity.FavoriteVenue;
 import com.project.localbrew.entity.Venue;
 import com.project.localbrew.service.FavoriteVenueService;
 import jakarta.validation.constraints.NotNull;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
@@ -21,10 +22,12 @@ public class FavoriteVenueController {
     }
 
     @PostMapping("/{venueId}")
-    public ResponseEntity<FavoriteVenueResponse> addFavoriteVenue(@PathVariable @NotNull(message = "Venue id non può essere nullo") UUID venueId){
+    public ResponseEntity<FavoriteVenueResponse> addFavoriteVenue(@PathVariable UUID venueId){
         FavoriteVenue favoriteVenue = favoriteVenueService.saveFavoriteVenue(venueId);
 
-        return  ResponseEntity.ok(toResponse(favoriteVenue));
+        return  ResponseEntity
+                .status(HttpStatus.CREATED)
+                .body(toResponse(favoriteVenue));
     }
 
     @GetMapping

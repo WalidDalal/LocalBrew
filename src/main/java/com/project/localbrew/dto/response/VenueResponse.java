@@ -23,6 +23,6 @@ public class VenueResponse {
     private VenueType type;
     private VenueStatus status;
     private LocalDateTime createdAt;
-
     private String ownerUsername;
+    private String imageUri;
 }

@@ -37,4 +37,8 @@ public class VenueRequest {
     @DecimalMin(value = "-180.0", message = "Longitudine minima -180")
     @DecimalMax(value = "180.0", message = "Longitudine massima 180")
     private Double longitude;
+
+    @Size(max = 500)
+    @Pattern(regexp = "^(https?://).+\\.(jpg|jpeg|png|webp)$", message = "Image URL non valida")
+    private String imageUri;
 }

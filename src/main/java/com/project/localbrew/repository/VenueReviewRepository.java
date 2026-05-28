@@ -10,9 +10,9 @@ import java.util.UUID;
 @Repository
 public interface VenueReviewRepository extends JpaRepository<VenueReview, UUID> {
 
-    boolean existsByUser_IdAndVenue_Id(UUID userId, UUID venueId);
+    boolean existsByUserIdAndVenueId(UUID userId, UUID venueId);
 
-    List<VenueReview> findAllByVenue_Id(UUID venueId);
+    List<VenueReview> findAllByVenueId(UUID venueId);
 
-    List<VenueReview> findAllByUser_Id(UUID userId);
+    List<VenueReview> findAllByUserId(UUID userId);
 }

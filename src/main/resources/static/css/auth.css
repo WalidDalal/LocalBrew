@@ -100,6 +100,25 @@
     font-weight: 800;
 }
 
+.auth-home {
+    margin-top: 14px;
+    text-align: center;
+}
+
+.auth-home a {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    color: var(--muted);
+    font-weight: 800;
+    transition: .2s;
+}
+
+.auth-home a:hover {
+    color: var(--green);
+}
+
 .dashboard-card {
     width: 100%;
 }

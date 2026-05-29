@@ -5,6 +5,7 @@ import {
   getVenueDrinks,
   getVenueReviews
 } from './api.js';
+import { getFavorites, toggleFavorite } from './favorites.js';
 import { showToast } from './feedback.js';
 import { escapeHtml } from './utils.js';
 
@@ -73,6 +74,95 @@ function renderReviewForm(user, venueId) {
   `;
 }
 
+function renderFavoriteButton(user, venueId, isFavorite) {
+  if (!user) return '';
+
+  return `
+    <button
+      type="button"
+      class="detail-favorite-button ${isFavorite ? 'is-favorite' : ''}"
+      data-id="${escapeHtml(venueId)}"
+      aria-label="${isFavorite ? 'Rimuovi dai preferiti' : 'Aggiungi ai preferiti'}">
+      <i class="${isFavorite ? 'fa-solid' : 'fa-regular'} fa-heart"></i>
+      <span>${isFavorite ? 'Tra i preferiti' : 'Aggiungi ai preferiti'}</span>
+    </button>
+  `;
+}
+
+function renderMapButton(venueId) {
+  return `
+    <button
+      type="button"
+      class="detail-map-button"
+      data-id="${escapeHtml(venueId)}"
+      aria-label="Vai sulla mappa">
+      <i class="fa-solid fa-map-location-dot"></i>
+      <span>Mappa</span>
+    </button>
+  `;
+}
+
+function updateFavoriteButton(button, isFavorite) {
+  const icon = button.querySelector('i');
+  const label = button.querySelector('span');
+
+  button.classList.toggle('is-favorite', isFavorite);
+  button.setAttribute('aria-label', isFavorite ? 'Rimuovi dai preferiti' : 'Aggiungi ai preferiti');
+
+  icon?.classList.toggle('fa-regular', !isFavorite);
+  icon?.classList.toggle('fa-solid', isFavorite);
+
+  if (label) {
+    label.textContent = isFavorite ? 'Tra i preferiti' : 'Aggiungi ai preferiti';
+  }
+}
+
+function syncVisibleFavoriteButtons(venueId, isFavorite) {
+  document
+    .querySelectorAll('.favorite-button, .detail-favorite-button')
+    .forEach(button => {
+      if (button.dataset.id === String(venueId)) {
+        updateFavoriteButton(button, isFavorite);
+      }
+    });
+}
+
+function bindFavoriteButton(venueId, initialFavorite) {
+  const button = document.querySelector('.detail-favorite-button');
+  if (!button) return;
+
+  let isFavorite = initialFavorite;
+
+  button.addEventListener('click', async () => {
+    try {
+      button.disabled = true;
+      const favoriteIds = await toggleFavorite(venueId, isFavorite);
+      isFavorite = favoriteIds.includes(String(venueId));
+
+      syncVisibleFavoriteButtons(venueId, isFavorite);
+      window.dispatchEvent(new CustomEvent('localbrew:favorites-changed', {
+        detail: { favoriteIds }
+      }));
+      showToast(isFavorite ? 'Locale aggiunto ai preferiti.' : 'Locale rimosso dai preferiti.');
+    } catch (error) {
+      showToast(error.message, 'error');
+    } finally {
+      button.disabled = false;
+    }
+  });
+}
+
+function bindMapButton(venueId) {
+  const button = document.querySelector('.detail-map-button');
+  if (!button) return;
+
+  button.addEventListener('click', () => {
+    window.dispatchEvent(new CustomEvent('localbrew:focus-venue', {
+      detail: { venueId }
+    }));
+  });
+}
+
 function bindReviewForm(venueId) {
   const form = document.getElementById('venue-review-form');
   const message = document.getElementById('venue-review-message');
@@ -111,12 +201,20 @@ export async function openVenueDetails(id) {
       getVenueReviews(id).catch(() => []),
       getCurrentUser()
     ]);
+    const favoriteIds = user ? await getFavorites() : [];
+    const isFavorite = favoriteIds.includes(String(id));
 
     content.innerHTML = `
       <img class="detail-cover" src="${escapeHtml(venue.imageUri || FALLBACK_IMAGE)}" alt="Foto di ${escapeHtml(venue.name)}">
       <div class="detail-heading">
         <span>${escapeHtml(venue.type || 'Locale')}</span>
-        <h2>${escapeHtml(venue.name)}</h2>
+        <div class="detail-title-row">
+          <h2>${escapeHtml(venue.name)}</h2>
+          <div class="detail-title-actions">
+            ${renderMapButton(id)}
+            ${renderFavoriteButton(user, id, isFavorite)}
+          </div>
+        </div>
         <p>${escapeHtml(venue.description || '')}</p>
       </div>
       <div class="detail-meta">
@@ -130,6 +228,8 @@ export async function openVenueDetails(id) {
       ${renderReviewForm(user, id)}
     `;
 
+    bindMapButton(id);
+    bindFavoriteButton(id, isFavorite);
     bindReviewForm(id);
   } catch (error) {
     content.textContent = error.message || 'Impossibile caricare i dettagli del locale.';

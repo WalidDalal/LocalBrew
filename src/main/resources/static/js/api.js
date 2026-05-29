@@ -116,6 +116,13 @@ export function getVenueReviews(venueId) {
   return apiRequest(`/api/v1/public/venues/${venueId}/reviews`);
 }
 
+export function deleteVenueReview(id) {
+  return apiRequest(`/api/v1/admin/reviews/${id}`, {
+    method: 'DELETE',
+    auth: true
+  });
+}
+
 export function getDrinks({ categories, name } = {}) {
   return apiRequest('/api/v1/public/drinks', {
     params: { categories, name }
@@ -187,6 +194,14 @@ export function createDrink(drink) {
 export function addDrinkToVenue(venueId, venueDrink) {
   return apiRequest(`/api/v1/owner/venues/${venueId}/drinks`, {
     method: 'POST',
+    auth: true,
+    body: venueDrink
+  });
+}
+
+export function updateDrinkInVenue(venueId, drinkId, venueDrink) {
+  return apiRequest(`/api/v1/owner/venues/${venueId}/drinks/${drinkId}`, {
+    method: 'PUT',
     auth: true,
     body: venueDrink
   });

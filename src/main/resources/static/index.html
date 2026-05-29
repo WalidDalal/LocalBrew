@@ -30,21 +30,6 @@
     </header>
 
     <section class="map-section">
-      <div class="map-overlay">
-        <button type="button" class="map-overlay-close" id="map-overlay-close" aria-label="Chiudi testo mappa">
-          <i class="fa-solid fa-xmark"></i>
-        </button>
-        <span class="badge" id="location-badge">
-          <i class="fa-solid fa-location-dot"></i>
-          <span id="location-badge-text">Italia</span>
-          <button type="button" class="badge-close" id="location-badge-close" aria-label="Rimuovi badge">
-            <i class="fa-solid fa-xmark"></i>
-          </button>
-        </span>
-        <h1>Trova la birra giusta nel locale giusto</h1>
-        <p>Cerca per nome del locale o filtra per stile: IPA, Stout, Lager, Ale, Wheat e Sour.</p>
-      </div>
-
       <aside class="sidebar">
         <div class="search-panel hidden" id="search-panel">
           <h3>Cerca locale o birra</h3>
@@ -58,11 +43,8 @@
           <button type="button" class="sidebar-item active" id="btn-search">
             <i class="fa-solid fa-magnifying-glass"></i><span>Ricerca</span>
           </button>
-          <button type="button" class="sidebar-item" id="btn-pub">
-            <i class="fa-solid fa-beer-mug-empty"></i><span>Pub</span>
-          </button>
-          <button type="button" class="sidebar-item" id="btn-user">
-            <i class="fa-solid fa-location-crosshairs"></i><span>Posizione</span>
+          <button type="button" class="sidebar-item hidden" id="btn-favorites" aria-label="Mostra preferiti" title="Preferiti">
+            <i class="fa-regular fa-heart"></i><span>Preferiti</span>
           </button>
           <button type="button" class="sidebar-item" id="btn-reset">
             <i class="fa-solid fa-rotate"></i><span>Reset</span>

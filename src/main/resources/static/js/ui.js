@@ -4,6 +4,7 @@ import { markers, markersCluster } from './markers.js';
 import { escapeHtml } from './utils.js';
 import { getFavorites, toggleFavorite } from './favorites.js';
 import { openVenueDetails } from './details.js';
+import { getToken } from './api.js';
 
 // Genera le card partendo dai dati in data.js.
 const INITIAL_VISIBLE_CARDS = 3;
@@ -70,15 +71,17 @@ function renderCards(pubs, favorites) {
 
           <div class="tags">${tags}</div>
 
-          <button type="button" class="card-map-button" data-index="${index}">
-            <i class="fa-solid fa-map-location-dot"></i>
-              Mostra sulla mappa
-          </button>
+          <div class="card-buttons">
+            <button type="button" class="card-map-button" data-index="${index}">
+              <i class="fa-solid fa-map-location-dot"></i>
+              <span>Mappa</span>
+            </button>
 
-          <button type="button" class="card-details-button" data-id="${safeId}">
-            <i class="fa-solid fa-circle-info"></i>
-              Dettagli
-          </button>
+            <button type="button" class="card-details-button" data-id="${safeId}">
+              <i class="fa-solid fa-circle-info"></i>
+              <span>Dettagli</span>
+            </button>
+          </div>
         </div>
       </article>
     `;
@@ -112,37 +115,22 @@ function focusMarker(index) {
   });
 }
 
-// Mostra il badge personalizzato con la localizazione 
-function updateLocationBadge(text) {
-  const badge = document.getElementById('location-badge');
-  const badgeText = document.getElementById('location-badge-text');
+export async function initUI(pubs) {
+  let favoriteIds = await getFavorites();
+  let showFavoritesOnly = false;
 
-  if (!badge || !badgeText) return;
-
-  if (!text) {
-    badge.classList.add('hidden');
-    badgeText.textContent = '';
-    return;
+  function applyCurrentFilters() {
+    applyFilters(pubs, showFavoritesOnly ? favoriteIds : null);
   }
 
-  badgeText.textContent = text;
-  badge.classList.remove('hidden');
-}
-
-
-export async function initUI(pubs) {
-  const favorites = await getFavorites();
-
-  renderCards(pubs, favorites);
+  renderCards(pubs, favoriteIds);
   updateCardsVisibility();
 
   // Riferimenti agli elementi principali controllati dalla UI.
   const searchInput = document.getElementById('searchInput');
   const searchPanel = document.getElementById('search-panel');
   const beerCheckboxes = document.querySelectorAll('.filter-option input');
-  const locationBadgeClose = document.getElementById('location-badge-close');
-  const mapOverlay = document.querySelector('.map-overlay');
-  const mapOverlayClose = document.getElementById('map-overlay-close');
+  const favoritesButton = document.getElementById('btn-favorites');
   const detailsPanel = document.getElementById('venue-details');
   const detailsClose = document.getElementById('details-close');
 
@@ -153,42 +141,25 @@ export async function initUI(pubs) {
   }
 
   if (searchInput) {
-    searchInput.addEventListener('input', () => applyFilters(pubs));
+    searchInput.addEventListener('input', applyCurrentFilters);
   }
 
-  // per chiudere il badge più grosso (Overlay)
-  if (mapOverlayClose && mapOverlay) {
-    mapOverlayClose.addEventListener('click', () => {
-      mapOverlay.classList.add('hidden');
+  if (favoritesButton && getToken()) {
+    favoritesButton.classList.remove('hidden');
+    favoritesButton.addEventListener('click', () => {
+      showFavoritesOnly = !showFavoritesOnly;
+      favoritesButton.classList.toggle('active', showFavoritesOnly);
+      favoritesButton.setAttribute(
+        'aria-label',
+        showFavoritesOnly ? 'Mostra tutti i locali' : 'Mostra preferiti'
+      );
+      applyCurrentFilters();
     });
   }
 
   // Ogni cambio dei filtri aggiorna insieme card e marker.
   beerCheckboxes.forEach(box => {
-    box.addEventListener('change', () => applyFilters(pubs));
-  });
-
-  let userMarker = null;
-
-  document.getElementById('btn-user').addEventListener('click', () => {
-    // Usa la geolocalizzazione del browser per centrare la mappa sull'utente.
-    if (!navigator.geolocation) {
-      alert('Geolocalizzazione non supportata dal browser');
-      return;
-    }
-
-    navigator.geolocation.getCurrentPosition(
-      position => {
-        const lat = position.coords.latitude;
-        const lng = position.coords.longitude;
-        map.setView([lat, lng], 15);
-        updateLocationBadge('Vicino a te');
-
-        if (userMarker) map.removeLayer(userMarker);
-        userMarker = L.marker([lat, lng]).addTo(map).bindPopup('&#128205; Sei qui').openPopup();
-      },
-      () => alert('Impossibile ottenere la posizione')
-    );
+    box.addEventListener('change', applyCurrentFilters);
   });
 
   document.getElementById('btn-reset').addEventListener('click', () => {
@@ -196,19 +167,11 @@ export async function initUI(pubs) {
     map.setView([45.4642, 9.1900], 12);
     searchInput.value = '';
     beerCheckboxes.forEach(box => box.checked = false);
+    showFavoritesOnly = false;
+    favoritesButton?.classList.remove('active');
+    favoritesButton?.setAttribute('aria-label', 'Mostra preferiti');
 
-    if (userMarker) {
-      map.removeLayer(userMarker);
-      userMarker = null;
-    }
-
-    applyFilters(pubs);
-    updateLocationBadge('');
-  });
-
-  document.getElementById('btn-pub').addEventListener('click', () => {
-    // Scorciatoia: porta al primo locale della lista.
-    focusMarker(0);
+    applyCurrentFilters();
   });
 
   document.addEventListener('click', async event => {
@@ -220,8 +183,8 @@ export async function initUI(pubs) {
 
       try {
         favoriteButton.disabled = true;
-        const favorites = await toggleFavorite(pubId, wasFavorite);
-        const isFavorite = favorites.includes(String(pubId));
+        favoriteIds = await toggleFavorite(pubId, wasFavorite);
+        const isFavorite = favoriteIds.includes(String(pubId));
         const icon = favoriteButton.querySelector('i');
 
         favoriteButton.classList.toggle('is-favorite', isFavorite);
@@ -232,6 +195,7 @@ export async function initUI(pubs) {
           'aria-label',
           isFavorite ? 'Rimuovi dai preferiti' : 'Aggiungi ai preferiti'
         );
+        applyCurrentFilters();
       } catch (error) {
         alert(error.message);
       } finally {
@@ -265,19 +229,9 @@ export async function initUI(pubs) {
     searchPanel.classList.toggle('hidden');
   });
 
-  // Permette all'utente di nascondere manualmente il badge sopra la mappa.
-  if (locationBadgeClose) {
-    locationBadgeClose.addEventListener('click', () => {
-      updateLocationBadge('');
-    });
-  }
-
   // aggiorna le card per aagiungerne altre
   document.querySelector('.all-btn').addEventListener('click', () => {
     showAllVenues = !showAllVenues;
     updateCardsVisibility();
   });
-
-  //questo in futuro quano cerchi una citta
-  //updateLocationBadge(`Ricerca: ${cityName}`);
 }

@@ -92,7 +92,7 @@ public class VenueServiceImpl implements VenueService {
 
     @Override
     public List<VenueResponse> findAllVenuesByCurrentOwner() {
- 
+
         User owner = currentUserService.getCurrentUser();
         return venueRepository.findAllByOwnerId(owner.getId())
                 .stream()
@@ -181,6 +181,9 @@ public class VenueServiceImpl implements VenueService {
         if (request.getType() != null) {
             existing.setType(request.getType());
         }
+        if (request.getImageUri() != null) {
+            existing.setImageUri(request.getImageUri());
+        }
 
         return toResponse(venueRepository.save(existing));
     }
@@ -253,6 +256,7 @@ public class VenueServiceImpl implements VenueService {
                 .latitude(request.getLatitude())
                 .longitude(request.getLongitude())
                 .type(request.getType())
+                .imageUri(request.getImageUri())
                 .build();
     }
 
@@ -269,6 +273,7 @@ public class VenueServiceImpl implements VenueService {
                 .status(venue.getStatus())
                 .createdAt(venue.getCreatedAt())
                 .ownerUsername(venue.getOwner().getUsername())
+                .imageUri(venue.getImageUri())
                 .build();
     }
 

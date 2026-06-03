@@ -97,15 +97,15 @@ function renderCards(pubs, favorites) {
               <span>Mappa</span>
             </button>
 
+            <a class="card-google-button" href="${mapsUrl}" target="_blank" rel="noopener noreferrer" aria-label="Apri ${name} su Google Maps">
+              <i class="fa-solid fa-location-arrow"></i>
+              <span>Maps</span>
+            </a>
+
             <button type="button" class="card-details-button" data-id="${safeId}">
               <i class="fa-solid fa-circle-info"></i>
               <span>Dettagli</span>
             </button>
-
-            <a class="card-google-button" href="${mapsUrl}" target="_blank" rel="noopener noreferrer" aria-label="Apri ${name} su Google Maps">
-              <i class="fa-solid fa-location-arrow"></i>
-              <span>Google</span>
-            </a>
           </div>
         </div>
       </article>

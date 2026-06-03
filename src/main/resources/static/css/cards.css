@@ -84,6 +84,8 @@
   padding:16px;
   flex:1;
   gap:14px;
+  width:100%;
+  min-width:0;
 }
 .card-top{
   display:flex;
@@ -91,11 +93,14 @@
   gap:12px;
   align-items:flex-start;
   width:100%;
+  min-width:0;
 }
 .card h3{
   color:var(--green);
   font-size:18px;
   line-height:1.2;
+  min-width:0;
+  overflow-wrap:anywhere;
 }
 .rating{
   background:#fff3d8;
@@ -116,11 +121,21 @@
   font-size:13px;
   font-weight:700;
   line-height:1.35;
+  width:100%;
+  min-width:0;
 }
 
 .card-location i{
   color:var(--green);
   font-size:12px;
+  flex:0 0 auto;
+}
+
+.card-location span{
+  min-width:0;
+  overflow:hidden;
+  text-overflow:ellipsis;
+  white-space:nowrap;
 }
 
 /* Tag delle birre disponibili nel locale. */
@@ -129,6 +144,8 @@
   flex-wrap:wrap;
   gap:8px;
   margin-top:0;
+  width:100%;
+  min-width:0;
 }
 .tags span{
   background:#f7e7c2;
@@ -142,7 +159,7 @@
 .card-buttons{
   width:100%;
   display:grid;
-  grid-template-columns:repeat(3,minmax(0,1fr));
+  grid-template-columns:repeat(2,minmax(0,1fr));
   gap:8px;
   margin-top:auto;
 }
@@ -161,8 +178,23 @@
   border-radius:14px;
   font-size:13px;
   font-weight:800;
+  min-width:0;
   transition:.25s;
 }
+
+.card-map-button span,
+.card-details-button span,
+.card-google-button span{
+  min-width:0;
+  overflow:hidden;
+  text-overflow:ellipsis;
+  white-space:nowrap;
+}
+
+.card-details-button{
+  grid-column:1 / -1;
+}
+
 .card-map-button,
 .card-google-button{
   background:#f7f3ec;
@@ -227,11 +259,11 @@
 }
 
 /* Riduce le colonne quando non c'e' abbastanza spazio per tre card leggibili. */
-@media(max-width:1000px){
+@media(max-width:1100px){
   .cards{grid-template-columns:repeat(2,minmax(0,1fr))}
 }
 
-@media(max-width:650px){
+@media(max-width:720px){
   .cards{
     grid-template-columns:1fr;
     max-height:620px;
@@ -244,6 +276,7 @@
   display:flex;
   align-items:center;
   gap:8px;
+  flex:0 0 auto;
 }
 
 /* Pulsante cuore per salvare un locale tra i preferiti. */

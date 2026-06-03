@@ -28,7 +28,7 @@
 }
 
 .cards::-webkit-scrollbar-thumb{
-  border:2px solid #fff8ec;
+  border:2px solid var(--cream);
   border-radius:999px;
   background:rgba(21,79,31,.42);
 }
@@ -39,7 +39,7 @@
 
 /* Card singola: contiene immagine, nome, rating, tag e bottone mappa. */
 .card{
-  background:white;
+  background:var(--paper);
   border:1px solid var(--line);
   border-radius:18px;
   overflow:hidden;

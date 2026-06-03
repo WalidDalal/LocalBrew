@@ -1,5 +1,10 @@
 // Punto di ingresso: prepara la mappa e importa le funzioni dell'app.
-import './map.js';
+import { initTheme, setThemeChangeCallback } from './theme.js';
+import { syncMapTheme } from './map.js';
+
+setThemeChangeCallback(syncMapTheme);
+initTheme();
+syncMapTheme();
 import { loadPubs } from './data.js';
 import { initMarkers } from './markers.js';
 import { initUI } from './ui.js';

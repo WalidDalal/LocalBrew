@@ -50,7 +50,7 @@ function renderCards(pubs, favorites) {
         <div class="card-img">
           <img src="${image}" alt="Foto di ${name}">
           <h3>${name}</h3>
-          <span class="rating">&#11088; ${rating}</span>
+          <span class="rating"><i class="fa-solid fa-star card-star"></i> ${rating}</span>
         </div>
 
         <div class="card-body">
@@ -58,7 +58,7 @@ function renderCards(pubs, favorites) {
             <h3>${name}</h3>
 
             <div class="card-actions">
-              <span class="rating">&#11088; ${rating}</span>
+              <span class="rating"><i class="fa-solid fa-star card-star"></i> ${rating}</span>
 
               <button
                 type="button"
@@ -143,7 +143,7 @@ function renderFavoritesList(pubs, favoriteIds) {
       <img src="${escapeHtml(pub.image)}" alt="Foto di ${escapeHtml(pub.name)}">
       <div class="favorite-panel-main">
         <strong>${escapeHtml(pub.name)}</strong>
-        <small>${escapeHtml(pub.city || '')} &middot; &#11088; ${escapeHtml(pub.rating)}</small>
+        <small>${escapeHtml(pub.city || '')} &middot; <i class="fa-solid fa-star card-star"></i> ${escapeHtml(pub.rating)}</small>
       </div>
       <div class="favorite-panel-actions">
         <button type="button" class="favorite-panel-map-button" data-id="${escapeHtml(pub.id)}" aria-label="Vai sulla mappa">
@@ -157,6 +157,7 @@ function renderFavoritesList(pubs, favoriteIds) {
   `).join('');
 }
 
+
 export async function initUI(pubs) {
   let favoriteIds = await getFavorites();
   let showFavoritesOnly = false;
@@ -168,19 +169,25 @@ export async function initUI(pubs) {
   renderCards(pubs, favoriteIds);
   updateCardsVisibility();
 
-  // Riferimenti agli elementi principali controllati dalla UI.
-  const searchInput = document.getElementById('searchInput');
-  const searchPanel = document.getElementById('search-panel');
-  const searchButton = document.getElementById('btn-search');
-  const favoritesPanel = document.getElementById('favorites-panel');
-  const beerCheckboxes = document.querySelectorAll('.filter-option input');
+  const searchInput     = document.getElementById('searchInput');
+  const searchPanel     = document.getElementById('search-panel');
+  const searchButton    = document.getElementById('btn-search');
+  const favoritesPanel  = document.getElementById('favorites-panel');
+  const beerCheckboxes  = document.querySelectorAll('.filter-option input');
   const favoritesButton = document.getElementById('btn-favorites');
-  const detailsPanel = document.getElementById('venue-details');
-  const detailsClose = document.getElementById('details-close');
+  const detailsPanel    = document.getElementById('venue-details');
+  const detailsClose    = document.getElementById('details-close');
+  const detailsOverlay  = document.getElementById('details-overlay');
 
   function closeDetailsPanel() {
     detailsPanel?.classList.add('hidden');
+    detailsOverlay?.classList.add('hidden');
     map.closePopup();
+  }
+
+  function openDetailsPanel() {
+    detailsPanel?.classList.remove('hidden');
+    detailsOverlay?.classList.remove('hidden');
   }
 
   function focusVenueById(venueId) {
@@ -193,12 +200,7 @@ export async function initUI(pubs) {
 
   if (detailsPanel && detailsClose) {
     detailsClose.addEventListener('click', closeDetailsPanel);
-
-    detailsPanel.addEventListener('click', event => {
-      if (event.target === detailsPanel) {
-        closeDetailsPanel();
-      }
-    });
+    detailsOverlay?.addEventListener('click', closeDetailsPanel);
 
     document.addEventListener('keydown', event => {
       if (event.key === 'Escape' && !detailsPanel.classList.contains('hidden')) {
@@ -255,7 +257,6 @@ export async function initUI(pubs) {
   });
 
   document.getElementById('btn-reset').addEventListener('click', () => {
-    // Torna alla vista iniziale sull'Italia e pulisce tutti i filtri.
     fitItaly({ animate: true });
     searchInput.value = '';
     beerCheckboxes.forEach(box => box.checked = false);
@@ -263,7 +264,6 @@ export async function initUI(pubs) {
     favoritesPanel?.classList.add('hidden');
     favoritesButton?.classList.remove('active');
     favoritesButton?.setAttribute('aria-label', 'Mostra preferiti');
-
     applyCurrentFilters();
   });
 
@@ -313,6 +313,7 @@ export async function initUI(pubs) {
 
     const favoritePanelDetailsButton = event.target.closest('.favorite-panel-details-button');
     if (favoritePanelDetailsButton) {
+      openDetailsPanel();
       openVenueDetails(favoritePanelDetailsButton.dataset.id);
       return;
     }
@@ -320,6 +321,7 @@ export async function initUI(pubs) {
     const detailsButton = event.target.closest('.card-details-button');
 
     if (detailsButton) {
+      openDetailsPanel();
       openVenueDetails(detailsButton.dataset.id);
       return;
     }
@@ -332,12 +334,12 @@ export async function initUI(pubs) {
 
     const popupDetailsButton = event.target.closest('.popup-details-link');
     if (popupDetailsButton) {
+      openDetailsPanel();
       openVenueDetails(popupDetailsButton.dataset.id);
     }
   });
 
   searchButton?.addEventListener('click', () => {
-    // Mostra o nasconde il pannello di ricerca sopra la mappa.
     const shouldOpen = searchPanel.classList.contains('hidden');
 
     searchPanel.classList.toggle('hidden', !shouldOpen);
@@ -345,6 +347,18 @@ export async function initUI(pubs) {
     favoritesPanel?.classList.add('hidden');
     favoritesButton?.classList.remove('active');
     favoritesButton?.setAttribute('aria-label', 'Mostra preferiti');
+  });
+
+  document.addEventListener('click', event => {
+    if (!searchPanel || searchPanel.classList.contains('hidden')) return;
+    const sidebar = document.querySelector('.sidebar');
+    if (sidebar && !sidebar.contains(event.target)) {
+      const query = searchInput?.value.trim() || '';
+      if (!query) {
+        searchPanel.classList.add('hidden');
+        searchButton?.classList.remove('active');
+      }
+    }
   });
 
   // aggiorna le card per aagiungerne altre

@@ -62,7 +62,13 @@ export function initMarkers(pubs) {
           Dettagli
         </button>
       </div>
-    `, { autoPan: false });
+    `, {
+      autoPan: true,
+      keepInView: true,
+      autoPanPadding: [24, 24],
+      maxWidth: 240,
+      minWidth: 190
+    });
 
     // Salva lo stesso marker sia per la UI sia per la visualizzazione in cluster.
     markers.push(marker);

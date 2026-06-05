@@ -1,0 +1,211 @@
+/* Sidebar flottante sopra la mappa: ricerca + pulsanti rapidi. */
+.sidebar{
+  position:absolute;
+  top:28px;
+  right:28px;
+  z-index:1000;
+  display:flex;
+  flex-direction:row;
+  align-items:flex-start;
+  gap:14px;
+}
+
+/* Colonna dei pulsanti principali sulla mappa. */
+.sidebar-buttons{
+  background:rgba(255,255,255,.94);
+  border:1px solid var(--line);
+  border-radius:24px;
+  padding:10px;
+  display:flex;
+  flex-direction:column;
+  gap:8px;
+  box-shadow:0 14px 35px rgba(0,0,0,.14);
+  backdrop-filter:blur(10px);
+}
+.sidebar-item{
+  width:82px;
+  min-height:76px;
+  background:transparent;
+  color:var(--green);
+  display:flex;
+  flex-direction:column;
+  justify-content:center;
+  align-items:center;
+  gap:7px;
+  border-radius:18px;
+  font-weight:800;
+  transition:.25s;
+}
+.sidebar-item:hover,.sidebar-item.active{
+  background:linear-gradient(135deg,var(--amber),var(--amber-2));
+  color:#2d1900;
+  transform:translateY(-2px);
+}
+.sidebar-item i{font-size:23px}
+.sidebar-item span{font-size:12px}
+
+/* Pannello di ricerca che si apre accanto ai pulsanti. */
+.search-panel{
+  width:310px;
+  background:rgba(255,255,255,.96);
+  border:1px solid var(--line);
+  border-radius:24px;
+  padding:18px;
+  box-shadow:0 14px 35px rgba(0,0,0,.14);
+  backdrop-filter:blur(10px);
+}
+.search-panel h3{color:var(--green);margin-bottom:12px}
+.search-box{
+  display:flex;
+  align-items:center;
+  gap:10px;
+  background:#f7f3ec;
+  border:1px solid var(--line);
+  border-radius:16px;
+  padding:12px 14px;
+}
+.search-box i{color:var(--green)}
+.search-box input{
+  width:100%;
+  border:0;
+  outline:0;
+  background:transparent;
+  color:var(--text);
+}
+
+.favorites-panel{
+  width:340px;
+  max-height:420px;
+  overflow:auto;
+  background:rgba(255,255,255,.96);
+  border:1px solid var(--line);
+  border-radius:24px;
+  padding:18px;
+  box-shadow:0 14px 35px rgba(0,0,0,.14);
+  backdrop-filter:blur(10px);
+  scrollbar-width:thin;
+  scrollbar-color:rgba(21,79,31,.45) transparent;
+}
+
+.favorites-panel::-webkit-scrollbar{
+  width:8px;
+}
+
+.favorites-panel::-webkit-scrollbar-button{
+  display:none;
+  width:0;
+  height:0;
+}
+
+.favorites-panel::-webkit-scrollbar-thumb{
+  border-radius:999px;
+  background:rgba(21,79,31,.42);
+}
+
+.favorites-panel h3{
+  color:var(--green);
+  margin-bottom:12px;
+}
+
+.favorites-list{
+  display:grid;
+  gap:10px;
+}
+
+.favorites-empty{
+  color:var(--muted);
+  font-weight:700;
+  line-height:1.4;
+}
+
+.favorite-panel-card{
+  display:grid;
+  grid-template-columns:58px minmax(0,1fr) auto;
+  gap:10px;
+  align-items:center;
+  width:100%;
+  padding:9px;
+  border:1px solid var(--line);
+  border-radius:16px;
+  background:#fffaf2;
+  color:var(--text);
+  text-align:left;
+  transition:.2s;
+}
+
+.favorite-panel-card:hover{
+  background:#fffdf8;
+}
+
+.favorite-panel-card img{
+  width:58px;
+  height:58px;
+  border-radius:12px;
+  object-fit:cover;
+  background:#f7e7c2;
+}
+
+.favorite-panel-main{
+  min-width:0;
+}
+
+.favorite-panel-main strong{
+  display:block;
+  color:var(--green);
+  white-space:nowrap;
+  overflow:hidden;
+  text-overflow:ellipsis;
+}
+
+.favorite-panel-main small{
+  display:block;
+  margin-top:3px;
+  color:var(--muted);
+  font-weight:700;
+}
+
+.favorite-panel-actions{
+  display:flex;
+  gap:6px;
+}
+
+.favorite-panel-actions button{
+  display:grid;
+  place-items:center;
+  width:34px;
+  height:34px;
+  border-radius:999px;
+  background:#fff3d8;
+  color:var(--green);
+  transition:.2s;
+}
+
+.favorite-panel-actions button:hover{
+  background:linear-gradient(135deg,var(--amber),var(--amber-2));
+  color:#2d1900;
+  transform:translateY(-1px);
+}
+
+/* Su mobile la sidebar diventa una barra inferiore. */
+@media(max-width:760px){
+  .sidebar{
+    top:auto;
+    left:12px;
+    right:12px;
+    bottom:14px;
+    flex-direction:column;
+    align-items:stretch;
+  }
+  .sidebar-buttons{
+    flex-direction:row;
+    justify-content:space-between;
+  }
+  .sidebar-item{
+    width:auto;
+    flex:1;
+    min-height:62px;
+  }
+  .search-panel,
+  .favorites-panel{width:100%;max-height:320px}
+}
+

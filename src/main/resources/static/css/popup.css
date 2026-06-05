@@ -1,0 +1,520 @@
+/* Popup generico non Leaflet: utile se in futuro si apre una scheda dettagliata custom. */
+.popup{
+  position:fixed;
+  top:100px;
+  left:50%;
+  transform:translateX(-50%);
+  background:white;
+  border-radius:22px;
+  display:flex;
+  gap:15px;
+  padding:15px;
+  width:400px;
+  box-shadow:var(--shadow);
+}
+
+/* Immagine e contenuto del popup custom. */
+.popup img{
+  width:120px;
+  height:120px;
+  border-radius:18px;
+  object-fit:cover;
+}
+.popup-content{flex:1}
+
+/* Overlay dietro il drawer dettagli */
+.details-overlay {
+  position: fixed;
+  inset: 0;
+  z-index: 999;
+  background: rgba(20,12,6,.45);
+  backdrop-filter: blur(2px);
+}
+
+/* Drawer laterale dettagli */
+.venue-details {
+  position: fixed;
+  top: 0;
+  right: 0;
+  width: min(520px, 100vw);
+  height: 100dvh;
+  z-index: 1000;
+  display: flex;
+  flex-direction: column;
+  background: var(--paper);
+  box-shadow: -6px 0 32px rgba(44,27,15,.18);
+  transform: translateX(0);
+}
+
+.venue-details.hidden {
+  display: none;
+}
+
+.venue-details-header {
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  padding: 14px 16px 0;
+  flex-shrink: 0;
+}
+
+#details-close {
+  display: grid;
+  place-items: center;
+  width: 38px;
+  height: 38px;
+  border-radius: 999px;
+  background: #fff3d8;
+  color: var(--green);
+  border: none;
+  cursor: pointer;
+  font-size: 16px;
+  transition: background .15s;
+}
+
+#details-close:hover { background: #ffe4a8; }
+
+#venue-details-content {
+  flex: 1;
+  overflow-y: auto;
+  padding: 0 24px 32px;
+  overscroll-behavior: contain;
+  scrollbar-width: thin;
+  scrollbar-color: rgba(21,79,31,.45) transparent;
+}
+
+.detail-cover{
+  width:100%;
+  height:230px;
+  object-fit:cover;
+  border-radius:18px;
+  background:#f7e7c2;
+}
+
+.detail-heading{
+  margin:18px 0;
+}
+
+.detail-title-row{
+  display:flex;
+  align-items:center;
+  justify-content:space-between;
+  gap:14px;
+}
+
+.detail-title-actions{
+  display:flex;
+  flex:0 0 auto;
+  flex-wrap:wrap;
+  justify-content:flex-start;
+  gap:8px;
+  margin:8px 0 12px;
+}
+
+.detail-heading span{
+  color:var(--green-2);
+  font-weight:800;
+  text-transform:uppercase;
+  font-size:12px;
+}
+
+.detail-heading h2,
+.venue-details h3{
+  color:var(--green);
+  margin:8px 0;
+}
+
+.detail-favorite-button,
+.detail-map-button{
+  display:inline-flex;
+  align-items:center;
+  justify-content:center;
+  gap:8px;
+  min-height:40px;
+  padding:10px 13px;
+  border-radius:999px;
+  background:#fff3d8;
+  color:var(--green);
+  font-weight:800;
+  transition:.2s;
+}
+
+.detail-favorite-button span,
+.detail-map-button span{
+  color:inherit;
+  font-size:inherit;
+  font-weight:inherit;
+  text-transform:none;
+}
+
+.detail-favorite-button:hover,
+.detail-map-button:hover{
+  background:#ffe4a8;
+}
+
+.detail-favorite-button.is-favorite{
+  background:var(--green);
+  color:#fff;
+}
+
+.detail-favorite-button:disabled{
+  cursor:not-allowed;
+  opacity:.65;
+}
+
+.detail-map-button{
+  background:#f7f3ec;
+}
+
+.detail-meta{
+  display:grid;
+  grid-template-columns:1fr 1fr;
+  gap:12px;
+  margin-bottom:20px;
+}
+
+.detail-meta p,
+.detail-muted,
+.detail-row p,
+.detail-row small,
+.detail-review small{
+  color:var(--muted);
+}
+
+.detail-tabs{
+  display:grid;
+  grid-template-columns:repeat(3,minmax(0,1fr));
+  gap:6px;
+  margin:18px 0 16px;
+  padding:6px;
+  border:1px solid var(--line);
+  border-radius:16px;
+  background:#f7f3ec;
+}
+
+.detail-tab{
+  min-height:38px;
+  padding:8px 10px;
+  border:0;
+  border-radius:12px;
+  background:transparent;
+  color:var(--green);
+  cursor:pointer;
+  font-weight:900;
+}
+
+.detail-tab.is-active{
+  background:linear-gradient(135deg,var(--amber),var(--amber-2));
+  color:#2d1900;
+  box-shadow:0 8px 18px rgba(244,182,61,.18);
+}
+
+.detail-tab-panel h3{
+  margin-top:16px;
+}
+
+.detail-tab-panel h3:first-child{
+  margin-top:0;
+}
+
+.detail-accordion{
+  border:1px solid var(--line);
+  border-radius:16px;
+  background:#fffaf2;
+  overflow:hidden;
+}
+
+.detail-accordion + .detail-accordion{
+  margin-top:12px;
+}
+
+.detail-accordion summary{
+  display:flex;
+  align-items:center;
+  justify-content:space-between;
+  gap:12px;
+  padding:13px 14px;
+  color:var(--green);
+  cursor:pointer;
+  font-weight:900;
+  list-style:none;
+}
+
+.detail-accordion summary::-webkit-details-marker{
+  display:none;
+}
+
+.detail-accordion summary i{
+  color:var(--amber-2);
+  transition:transform .2s ease;
+}
+
+.detail-accordion[open] summary i{
+  transform:rotate(180deg);
+}
+
+.detail-accordion-body{
+  padding:0 14px 14px;
+}
+
+.detail-load-more{
+  justify-self:start;
+  padding:9px 13px;
+  border:0;
+  border-radius:12px;
+  background:#f7f3ec;
+  color:var(--green);
+  cursor:pointer;
+  font-weight:900;
+}
+
+.detail-load-more:hover{
+  background:#ffe4a8;
+}
+
+.detail-list{
+  display:grid;
+  gap:10px;
+  margin:10px 0 22px;
+}
+
+.detail-row{
+  display:grid;
+  grid-template-columns:58px minmax(0,1fr);
+  gap:12px;
+  align-items:center;
+  padding:10px;
+  border:1px solid var(--line);
+  border-radius:14px;
+}
+
+.detail-row img{
+  width:58px;
+  height:58px;
+  border-radius:12px;
+  object-fit:cover;
+}
+
+.detail-review{
+  padding:12px;
+  border:1px solid var(--line);
+  border-radius:14px;
+  background:#fffaf2;
+}
+
+.detail-review.is-hidden{
+  display:none;
+}
+
+.detail-review strong{
+  color:#b46b00;
+}
+
+.detail-review-form{
+  display:grid;
+  gap:10px;
+  margin-top:20px;
+  padding-top:18px;
+  border-top:1px solid var(--line);
+}
+
+.detail-review-form input,
+.detail-review-form select,
+.detail-review-form textarea{
+  width:100%;
+  padding:12px;
+  border:1px solid var(--line);
+  border-radius:12px;
+  font:inherit;
+}
+
+.detail-review-form button{
+  display:inline-flex;
+  align-items:center;
+  justify-content:center;
+  min-height:44px;
+  margin-top:4px;
+  padding:12px 16px;
+  border-radius:14px;
+  background:linear-gradient(135deg,var(--green),var(--green-2));
+  color:#fff;
+  font-weight:900;
+  box-shadow:0 12px 22px rgba(21,79,31,.18);
+  transition:.2s;
+}
+
+.detail-review-form button:hover{
+  transform:translateY(-1px);
+}
+
+.detail-review-form button:disabled{
+  cursor:not-allowed;
+  opacity:.65;
+  transform:none;
+}
+
+.detail-form-message{
+  color:#9c2d1f;
+  font-weight:700;
+}
+
+@media(max-width:640px){
+  .venue-details {
+    width: 100vw;
+  }
+
+  .detail-meta{
+    grid-template-columns:1fr;
+  }
+
+  .detail-title-row{
+    align-items:flex-start;
+    flex-direction:column;
+  }
+
+  .detail-title-actions{
+    justify-content:flex-start;
+  }
+}
+
+/* ── Stelle generiche (display) ──────────────────────────── */
+.detail-star,
+.card-star,
+.popup-star {
+  color: var(--amber-2);
+}
+
+.rating-icon{
+  display:inline-block;
+  color:#d4b889;
+  opacity:.45;
+  filter:none;
+}
+
+.rating-icon--filled{
+  color:var(--amber-2);
+  opacity:1;
+}
+
+.rating-icon--empty{
+  color:#d4b889;
+  opacity:.45;
+}
+
+.detail-star--lg { font-size: 16px; }
+.detail-star--md { font-size: 13px; }
+
+/* ── Riepilogo recensioni ─────────────────────────────────── */
+.detail-review-summary {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  background: #fffaf2;
+  border: 1px solid var(--line);
+  border-radius: 14px;
+  padding: 14px 18px;
+  margin: 10px 0 14px;
+}
+
+.detail-review-avg {
+  font-size: 36px;
+  font-weight: 900;
+  color: var(--green);
+  line-height: 1;
+}
+
+.detail-stars-row {
+  display: flex;
+  gap: 3px;
+  align-items: center;
+  margin-bottom: 3px;
+}
+
+.detail-review-count {
+  font-size: 12px;
+  color: var(--muted);
+  font-weight: 600;
+}
+
+/* ── Singola recensione ───────────────────────────────────── */
+.detail-reviews-list {
+  margin-bottom: 24px;
+}
+
+.detail-review {
+  padding: 14px 16px;
+  border: 1px solid var(--line);
+  border-radius: 14px;
+  background: #fffaf2;
+}
+
+.detail-review-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+  margin-bottom: 6px;
+  flex-wrap: wrap;
+}
+
+.detail-review-author {
+  font-size: 12px;
+  color: var(--muted);
+  font-weight: 600;
+  display: flex;
+  align-items: center;
+  gap: 5px;
+}
+
+.detail-review-comment {
+  font-size: 14px;
+  color: var(--text);
+  line-height: 1.5;
+  margin: 0;
+}
+
+/* ── Star picker interattivo ──────────────────────────────── */
+.detail-star-picker {
+  display: flex;
+  gap: 6px;
+  margin: 4px 0;
+}
+
+.star-btn {
+  display:inline-grid;
+  place-items:center;
+  background: none;
+  border: none;
+  cursor: pointer;
+  padding: 2px;
+  line-height: 1;
+  width:40px;
+  height:40px;
+  border-radius:12px;
+}
+
+.star-btn.is-filled .rating-icon {
+  color:var(--amber-2);
+  opacity:1;
+}
+
+.star-btn--xl i { font-size: 28px; }
+.star-btn--lg i { font-size: 22px; }
+.star-btn--md i { font-size: 16px; }
+
+.detail-star-hint {
+  font-size: 12px;
+  color: var(--muted);
+  font-weight: 600;
+  min-height: 18px;
+  margin: 0 0 6px;
+}
+
+.detail-star-hint--selected {
+  color: var(--green);
+}
+
+/* ── Popup marker: stella ─────────────────────────────────── */
+.venue-popup-meta .popup-star {
+  font-size: 12px;
+}

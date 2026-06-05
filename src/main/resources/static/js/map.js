@@ -32,16 +32,16 @@ const DARK_STYLE = 'dark';
 
 const mapLayers = {
     [SIMPLIFIED_STYLE]: L.tileLayer('https://{s}.basemaps.cartocdn.com/rastertiles/voyager_labels_under/{z}/{x}/{y}{r}.png', {
-        attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a>',
+        attribution: '',
         subdomains: 'abcd',
         maxZoom: 20
     }),
     [SATELLITE_STYLE]: L.tileLayer('https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}', {
-        attribution: 'Tiles &copy; Esri, Maxar, Earthstar Geographics, and the GIS User Community',
+        attribution: '',
         maxZoom: 19
     }),
     [DARK_STYLE]: L.tileLayer('https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png', {
-        attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a>',
+        attribution: '',
         subdomains: 'abcd',
         maxZoom: 20
     })
@@ -144,6 +144,7 @@ export function getMapBounds() {
 export function onMapMoveEnd(callback) {
     map.on('moveend', callback);
 }
+
 export function fitItaly(options = {}) {
     map.setView(ITALY_CENTER, ITALY_ZOOM, {animate: false, ...options});
 }

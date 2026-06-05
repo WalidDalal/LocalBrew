@@ -1,12 +1,17 @@
 // Punto di ingresso: prepara la mappa e importa le funzioni dell'app.
 import { initTheme, setThemeChangeCallback } from './theme.js';
 import { syncMapTheme } from './map.js';
+import { initMarkers, syncMarkerTheme } from './markers.js';
 
-setThemeChangeCallback(syncMapTheme);
+function syncThemeUi() {
+  syncMapTheme();
+  syncMarkerTheme();
+}
+
+setThemeChangeCallback(syncThemeUi);
 initTheme();
-syncMapTheme();
+syncThemeUi();
 import { loadPubs } from './data.js';
-import { initMarkers } from './markers.js';
 import { initUI } from './ui.js';
 import { clearToken, getCurrentUser } from './api.js';
 import { escapeHtml } from './utils.js';

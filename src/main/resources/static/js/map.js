@@ -85,7 +85,7 @@ function updateMapStyleButton(button) {
     const icon = button.querySelector('i');
     const label = button.querySelector('span');
 
-    button.classList.toggle('active', isSatellite);
+    button.classList.remove('active');
     button.setAttribute('aria-pressed', String(isSatellite));
     button.setAttribute(
         'aria-label',
@@ -97,7 +97,7 @@ function updateMapStyleButton(button) {
     }
 
     if (label) {
-        label.textContent = isSatellite ? 'Semplice' : 'Satellite';
+        label.textContent = isSatellite ? 'Mappa' : 'Satellite';
     }
 }
 

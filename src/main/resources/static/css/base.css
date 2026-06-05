@@ -484,3 +484,37 @@ a {
 [data-theme="dark"] .admin-drink-thumb--placeholder { background: #3d2c14; }
 [data-theme="dark"] .admin-drink-abv { background: #3d2c14; }
 [data-theme="dark"] .admin-drink-venue-pill { background: #3d2c14; border-color: var(--line); }
+
+/* ── Footer semplificato ── */
+.footer-team {
+    font-size: .82rem;
+    color: var(--muted);
+    margin: 0;
+}
+.footer-team a {
+    color: var(--green);
+    text-decoration: none;
+    font-weight: 700;
+}
+.footer-team a:hover { text-decoration: underline; }
+[data-theme="dark"] .footer-team { color: rgba(244,247,239,.4); }
+[data-theme="dark"] .footer-team a { color: var(--green); }
+
+/* ── Search X button ── */
+.search-clear-btn {
+    position: absolute;
+    right: 10px;
+    top: 50%;
+    transform: translateY(-50%);
+    background: none;
+    border: none;
+    cursor: pointer;
+    color: var(--muted);
+    font-size: 15px;
+    padding: 4px 6px;
+    line-height: 1;
+    transition: color .15s;
+    z-index: 1;
+}
+.search-clear-btn:hover { color: var(--text); }
+.search-box { position: relative; }

@@ -186,6 +186,8 @@ export async function initUI(pubs) {
 
   renderCards(pubs, favoriteIds);
   updateCardsVisibility();
+  // Dopo il primo render, sincronizza con la vista mappa corrente
+  setTimeout(syncCardsToMapView, 600);
 
   const searchInput     = document.getElementById('searchInput');
   const searchPanel     = document.getElementById('search-panel');
@@ -479,10 +481,24 @@ export async function initUI(pubs) {
 
   searchButton?.addEventListener('click', () => {
     const shouldOpen = searchPanel.classList.contains('hidden');
-
     searchPanel.classList.toggle('hidden', !shouldOpen);
     searchButton.classList.toggle('active', shouldOpen);
     closeFavoritesPanel();
+  });
+
+  // X per cancellare e chiudere la ricerca
+  document.getElementById('search-clear')?.addEventListener('click', () => {
+    if (searchInput) searchInput.value = '';
+    searchPanel.classList.add('hidden');
+    searchButton?.classList.remove('active');
+    document.querySelectorAll('.card').forEach(card => {
+      card.style.display = '';
+      card.classList.remove('card-out-of-view');
+    });
+    document.getElementById('venue-container')?.classList.remove('is-expanded');
+    applyCurrentFilters();
+    updateCardsVisibility();
+    setTimeout(syncCardsToMapView, 100);
   });
 
   document.addEventListener('click', event => {

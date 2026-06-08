@@ -250,8 +250,8 @@
     min-height: 40px;
     padding: 10px 14px;
     border-radius: 12px;
-    background: #fff3d8;
-    color: var(--green);
+    background: var(--green);
+    color: #fff;
     font-weight: 800;
     line-height: 1;
     text-decoration: none;
@@ -662,8 +662,8 @@
 
 /* ── Pannello birre (accordion) ───────────────────────────── */
 .drink-accordion-panel {
-    margin-top: 32px;
-    padding-top: 28px;
+    margin-top: 0;
+    padding-top: 20px;
     border-top: 1px solid var(--line);
     animation: panel-in .22s ease;
     position: relative;
@@ -773,7 +773,10 @@
     display: inline-flex;
     align-items: center;
     gap: 6px;
+    background: linear-gradient(135deg, var(--amber), var(--amber-2)) !important;
+    color: #2d1900 !important;
 }
+.manage-drinks:hover { filter: brightness(1.06); }
 
 @media (max-width: 840px) {
     .drink-panel-body {
@@ -960,16 +963,17 @@
 }
 
 .admin-new-drink-btn {
-    background: var(--green);
-    color: var(--cream);
+    background: linear-gradient(135deg, #5c6bc0, #7986cb);
+    color: #fff;
     border: none;
     font-size: 14px;
     cursor: pointer;
-    transition: background .18s;
+    transition: filter .18s, transform .18s;
 }
 
 .admin-new-drink-btn:hover {
-    background: var(--green-2);
+    filter: brightness(1.1);
+    transform: translateY(-2px);
 }
 
 .dashboard-logout-button {
@@ -1115,6 +1119,30 @@
     font-size: 12px;
     padding: 5px 10px;
 }
+
+/* Attiva: verde — azione positiva */
+.admin-venue-actions .activate {
+    background: var(--green);
+    color: #fff;
+    border-color: transparent;
+}
+.admin-venue-actions .activate:hover:not(:disabled) { background: var(--green-2); }
+
+/* Sospendi: arancione — azione di blocco */
+.admin-venue-actions .suspend {
+    background: #e07820;
+    color: #fff;
+    border-color: transparent;
+}
+.admin-venue-actions .suspend:hover:not(:disabled) { background: #c96a18; }
+
+/* Recensioni: teal — navigazione/visualizza */
+.admin-venue-actions .show-reviews {
+    background: linear-gradient(135deg, #0d7a6e, #12a094);
+    color: #fff;
+    border-color: transparent;
+}
+.admin-venue-actions .show-reviews:hover { filter: brightness(1.08); }
 
 /* ── Badge recensioni nella card ─────────────────────────── */
 .admin-review-badge {
@@ -2105,4 +2133,110 @@
     .admin-drink-edit-actions {
         grid-template-columns: 1fr;
     }
+}
+
+/* drink-message dentro il pannello */
+.drink-message-inline {
+    min-height: 0;
+    margin: 0 0 10px;
+    font-size: 13px;
+}
+.drink-message-inline:empty { display: none; }
+
+/* ── Drink form accordion ───────────────────────────────────── */
+.drink-accordion-block {
+    padding: 0;
+    overflow: hidden;
+}
+
+.drink-accordion-trigger {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    width: 100%;
+    padding: 14px 18px;
+    background: none;
+    border: none;
+    cursor: pointer;
+    font-size: 14px;
+    font-weight: 700;
+    color: var(--green);
+    text-align: left;
+    gap: 8px;
+    transition: background .15s;
+    border-radius: 18px;
+}
+
+.drink-accordion-trigger:hover { background: var(--cream); }
+
+.drink-accordion-trigger[aria-expanded="true"] {
+    border-radius: 18px 18px 0 0;
+    background: var(--greenL, #dff0df);
+}
+
+.drink-chevron {
+    font-size: 12px;
+    transition: transform .2s;
+    flex-shrink: 0;
+}
+
+.drink-chevron--open { transform: rotate(180deg); }
+
+.drink-accordion-body {
+    padding: 0 18px 18px;
+    animation: panel-in .18s ease;
+}
+
+.drink-accordion-body.hidden { display: none; }
+
+/* ── Dark mode ── */
+[data-theme="dark"] .drink-accordion-trigger:hover { background: #2e2010; }
+[data-theme="dark"] .drink-accordion-trigger[aria-expanded="true"] { background: #2e2010; }
+
+/* Annulla — azione neutra */
+#venue-cancel,
+.cancel-venue-drink {
+    background: #e8e0d4 !important;
+    color: #5a4a3a !important;
+    border-color: transparent !important;
+}
+#venue-cancel:hover,
+.cancel-venue-drink:hover { background: #d8cec2 !important; }
+
+/* Admin drink: Modifica → amber, Annulla → grigio */
+.admin-drink-actions .drink-edit-btn {
+    background: linear-gradient(135deg, var(--amber), var(--amber-2));
+    color: #2d1900;
+    border-color: transparent;
+}
+.admin-drink-actions .drink-cancel-btn {
+    background: #e8e0d4;
+    color: #5a4a3a;
+    border-color: transparent;
+}
+.admin-drink-actions .drink-cancel-btn:hover { background: #d8cec2; }
+
+/* Dark mode overrides */
+[data-theme="dark"] .admin-venue-actions .activate {
+    background: var(--green); color: #07120d;
+}
+[data-theme="dark"] .admin-venue-actions .suspend {
+    background: #c96a18; color: #fff;
+}
+[data-theme="dark"] .admin-venue-actions .show-reviews {
+    background: linear-gradient(135deg, #0a6560, #0d8a7e); color: #fff;
+}
+[data-theme="dark"] .manage-drinks {
+    background: linear-gradient(135deg, var(--amber), var(--amber-2)) !important;
+    color: #2d1900 !important;
+}
+[data-theme="dark"] #venue-cancel,
+[data-theme="dark"] .cancel-venue-drink {
+    background: #3a3028 !important; color: #c8b89a !important;
+}
+[data-theme="dark"] .admin-drink-actions .drink-edit-btn {
+    background: linear-gradient(135deg, var(--amber), var(--amber-2)); color: #2d1900;
+}
+[data-theme="dark"] .admin-drink-actions .drink-cancel-btn {
+    background: #3a3028; color: #c8b89a;
 }

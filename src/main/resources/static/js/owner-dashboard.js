@@ -14,7 +14,7 @@ import {
 } from './api.js';
 import './logout.js';
 import {confirmAction, showToast} from './feedback.js';
-import {requireRole} from './role-guard.js';
+import {requireAnyRole} from './role-guard.js';
 import {escapeHtml} from './utils.js';
 
 const form = document.getElementById('venue-form');
@@ -49,6 +49,29 @@ const drinkPanelTitle = document.getElementById('drink-panel-title');
 const drinkPanelSub = document.getElementById('drink-panel-sub');
 const drinkPanelClose = document.getElementById('drink-panel-close');
 
+// ── Accordion form birre ─────────────────────────────────────────────────
+document.querySelectorAll('.drink-accordion-trigger').forEach(trigger => {
+    trigger.addEventListener('click', () => {
+        const bodyId = trigger.getAttribute('aria-controls');
+        const body = document.getElementById(bodyId);
+        if (!body) return;
+        const isOpen = !body.classList.contains('hidden');
+        // Chiudi tutti gli altri
+        document.querySelectorAll('.drink-accordion-body').forEach(b => b.classList.add('hidden'));
+        document.querySelectorAll('.drink-accordion-trigger').forEach(t => {
+            t.setAttribute('aria-expanded', 'false');
+            t.querySelector('.drink-chevron')?.classList.remove('drink-chevron--open');
+        });
+        if (!isOpen) {
+            body.classList.remove('hidden');
+            trigger.setAttribute('aria-expanded', 'true');
+            trigger.querySelector('.drink-chevron')?.classList.add('drink-chevron--open');
+        }
+    });
+});
+
+
+
 const fields = {
     id: document.getElementById('venue-id'),
     name: document.getElementById('venue-name'),
@@ -75,9 +98,7 @@ let selectedVenueDrinks = [];
 let editingVenueDrinkId = null;
 
 function showMessage(text, type = '') {
-    message.textContent = text;
-    message.classList.remove('is-error', 'is-success');
-    if (type) message.classList.add(type);
+    showToast(text, type === 'is-error' ? 'error' : undefined);
 }
 
 function showDrinkMessage(text, type = '') {
@@ -369,7 +390,7 @@ async function refreshDrinkArea() {
     await Promise.all([loadAllDrinks(), loadSelectedVenueDrinks()]);
 }
 
-const user = await requireRole('OWNER');
+const user = await requireAnyRole('OWNER');
 
 if (user) {
     await loadOwnerVenues();

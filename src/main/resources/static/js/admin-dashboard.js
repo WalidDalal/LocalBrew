@@ -14,7 +14,7 @@ import {
 } from './api.js';
 import './logout.js';
 import {confirmAction, showToast} from './feedback.js';
-import {requireRole} from './role-guard.js';
+import {requireAnyRole} from './role-guard.js';
 import {escapeHtml} from './utils.js';
 
 // ── DOM refs ─────────────────────────────────────────────────
@@ -274,7 +274,7 @@ function readDrinkForm() {
 }
 
 // ── Init ──────────────────────────────────────────────────────
-const user = await requireRole('ADMIN');
+const user = await requireAnyRole('ADMIN');
 
 if (user) {
     await loadVenues();

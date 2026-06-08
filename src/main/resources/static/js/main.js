@@ -2,6 +2,10 @@
 import { initTheme, setThemeChangeCallback } from './theme.js';
 import { syncMapTheme } from './map.js';
 import { initMarkers, syncMarkerTheme } from './markers.js';
+import { loadPubs } from './data.js';
+import { initUI } from './ui.js';
+import { clearToken, getCurrentUser } from './api.js';
+import { escapeHtml } from './utils.js';
 
 function syncThemeUi() {
   syncMapTheme();
@@ -11,10 +15,6 @@ function syncThemeUi() {
 setThemeChangeCallback(syncThemeUi);
 initTheme();
 syncThemeUi();
-import { loadPubs } from './data.js';
-import { initUI } from './ui.js';
-import { clearToken, getCurrentUser } from './api.js';
-import { escapeHtml } from './utils.js';
 
 function updateStatus(message) {
   const status = document.getElementById('venues-status');
@@ -63,6 +63,8 @@ async function initApp() {
   try {
     // Se l'utente e autenticato, aggiorna subito i pulsanti dell'header.
     await updateHeaderAuth();
+    // Ri-applica il tema dopo che updateHeaderAuth ha riscritto l'header innerHTML
+    syncThemeUi();
 
     updateStatus('Caricamento locali...');
 

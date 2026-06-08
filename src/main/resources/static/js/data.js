@@ -23,7 +23,7 @@ function ratingValue(pub) {
 
 function uniqueTags(drinks) {
     const categories = drinks
-        .map(drink => drink.category || drink.drinkName)
+        .map(drink => drink.category || null)
         .filter(Boolean);
     const tags = [...new Set(categories)];
     return tags.length ? tags.join(', ') : 'Drink non disponibili';

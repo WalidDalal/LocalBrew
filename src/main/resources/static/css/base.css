@@ -256,8 +256,14 @@ a {
 
 [data-theme="dark"] .card-map-button,
 [data-theme="dark"] .card-google-button {
-    background: var(--surface);
-    border-color: var(--line);
+    background: var(--green);
+    border-color: transparent;
+    color: #fff;
+}
+
+[data-theme="dark"] .card-details-button {
+    background: linear-gradient(135deg, var(--amber), var(--amber-2));
+    color: #2d1900;
 }
 
 [data-theme="dark"] .card-map-button:hover,
@@ -267,15 +273,15 @@ a {
 }
 
 [data-theme="dark"] .all-btn {
-    background: var(--surface);
-    border-color: var(--line);
-    color: var(--green);
+    background: var(--green);
+    border-color: transparent;
+    color: #fff;
     box-shadow: 0 10px 24px rgba(0, 0, 0, .28);
 }
 
 [data-theme="dark"] .all-btn:hover {
-    background: var(--surface-2);
-    border-color: rgba(169, 189, 145, .36);
+    background: var(--green-2);
+    border-color: transparent;
     box-shadow: 0 14px 28px rgba(0, 0, 0, .36);
 }
 
@@ -415,17 +421,16 @@ a {
 [data-theme="dark"] .dashboard-link,
 [data-theme="dark"] .secondary-button,
 [data-theme="dark"] .dashboard-actions button {
-    background: var(--surface);
-    color: var(--green);
+    background: #2e5c35;
+    color: #fff;
 }
 
 [data-theme="dark"] .dashboard-link:hover,
 [data-theme="dark"] .secondary-button:hover,
 [data-theme="dark"] .dashboard-actions button:hover {
-    background: var(--surface-2);
+    background: #2e5c35;
 }
 
-[data-theme="dark"] .admin-new-drink-btn,
 [data-theme="dark"] .auth-submit,
 [data-theme="dark"] .profile-save-btn,
 [data-theme="dark"] .admin-status-pill--active,
@@ -435,13 +440,24 @@ a {
     border-color: rgba(169, 189, 145, .52);
 }
 
-[data-theme="dark"] .admin-new-drink-btn:hover,
 [data-theme="dark"] .auth-submit:hover,
 [data-theme="dark"] .profile-save-btn:hover,
 [data-theme="dark"] .admin-status-pill--active:hover,
 [data-theme="dark"] .profile-nav-item--active:hover {
     background: linear-gradient(135deg, #7f936b, #b6c9a1);
     color: #11180f;
+}
+
+/* admin-new-drink-btn mantiene indaco anche in dark */
+[data-theme="dark"] .admin-new-drink-btn {
+    background: linear-gradient(135deg, #4a58b0, #6572c0);
+    color: #fff;
+    border-color: rgba(114, 130, 203, .4);
+}
+
+[data-theme="dark"] .admin-new-drink-btn:hover {
+    background: linear-gradient(135deg, #5563bc, #717fcc);
+    color: #fff;
 }
 
 [data-theme="dark"] .dashboard-logout-button {
@@ -465,7 +481,7 @@ a {
 
 [data-theme="dark"] .btn-map,
 [data-theme="dark"] .btn-map:hover {
-    background: linear-gradient(135deg, var(--green), var(--green-2));
+    background: linear-gradient(135deg, #0a6560, #0d8a7e);
     color: #fff;
 }
 
@@ -900,4 +916,11 @@ a {
 
 .search-box {
     position: relative;
+}
+
+[data-theme="dark"] .login,
+[data-theme="dark"] .profile-btn {
+    background: var(--surface);
+    border-color: var(--line);
+    color: var(--green);
 }

@@ -185,10 +185,9 @@ function updateCardsVisibility() {
 
 export async function initUI(pubs) {
   let favoriteIds = await getFavorites();
-  let showFavoritesOnly = false;
 
   function applyCurrentFilters() {
-    applyFilters(pubs, showFavoritesOnly ? favoriteIds : null);
+    applyFilters(pubs, null);
   }
 
   renderCards(pubs, favoriteIds);
@@ -331,7 +330,6 @@ export async function initUI(pubs) {
     const bounds = getMapBounds();
     if (!bounds) return;
 
-    const searchInput = document.getElementById('searchInput');
     const hasTextSearch = (searchInput?.value || '').trim().length > 0;
 
     // Se c'e' una ricerca testuale, mostra tutti i risultati matching.
@@ -374,15 +372,17 @@ export async function initUI(pubs) {
       const card = document.querySelector(`.card[data-index="${index}"]`);
       if (!card) return;
 
+      // I locali filtrati fuori vanno sempre nascosti (il filtro li gestisce)
       if (card.classList.contains('is-filtered-out')) {
-        card.style.display = '';
+        card.style.display = 'none';
         return;
       }
 
-      const inView = bounds.contains([pub.lat, pub.lng]);
-      // style.display batte card-extra CSS solo se è esplicito
-      const shouldShow = inView && visibleInView < initialVisibleCards;
+      const inView = Number.isFinite(pub.lat) && Number.isFinite(pub.lng)
+        && bounds.contains([pub.lat, pub.lng]);
 
+      // Mostra i primi initialVisibleCards locali in-view
+      const shouldShow = inView && visibleInView < initialVisibleCards;
       card.style.display = shouldShow ? 'flex' : 'none';
       card.classList.toggle('card-out-of-view', !inView);
       if (inView) visibleInView++;
@@ -395,7 +395,6 @@ export async function initUI(pubs) {
     const allButton = document.querySelector('.all-btn');
     if (!allButton) return;
 
-    const searchInput = document.getElementById('searchInput');
     const hasTextSearch = (searchInput?.value || '').trim().length > 0;
 
     if (hasTextSearch) {
@@ -404,16 +403,22 @@ export async function initUI(pubs) {
     }
 
     const bounds = getMapBounds();
-    const inViewCount = pubs.reduce((count, pub, index) => {
-      const card = document.querySelector(`.card[data-index="${index}"]`);
-      if (!bounds || !card || card.classList.contains('is-filtered-out')) return count;
+    // Conta i locali visibili nel viewport che non sono filtrati
+    const inViewCount = bounds
+      ? pubs.filter((pub, index) => {
+          const card = document.querySelector(`.card[data-index="${index}"]`);
+          return card
+            && !card.classList.contains('is-filtered-out')
+            && Number.isFinite(pub.lat)
+            && Number.isFinite(pub.lng)
+            && bounds.contains([pub.lat, pub.lng]);
+        }).length
+      : 0;
 
-      return bounds.contains([pub.lat, pub.lng]) ? count + 1 : count;
-    }, 0);
-    const shouldShowButton = showAllVenues || inViewCount > getInitialVisibleCards();
-
+    // Mostra il bottone solo se ci sono più locali in-view di quelli già visibili
+    const shouldShowButton = inViewCount > getInitialVisibleCards();
     allButton.classList.toggle('hidden', !shouldShowButton);
-    allButton.textContent = showAllVenues ? 'Mostra meno locali' : 'Vedi tutti i locali';
+    allButton.textContent = showAllVenues ? 'Mostra meno' : 'Vedi altri';
   }
 
   onMapMoveEnd(syncCardsToMapView);
@@ -447,10 +452,6 @@ export async function initUI(pubs) {
     if (favoritesPanel && !favoritesPanel.classList.contains('hidden')) {
       renderFavoritesList(pubs, favoriteIds);
     }
-
-    if (showFavoritesOnly) {
-      applyCurrentFilters();
-    }
   });
 
   window.addEventListener('localbrew:focus-venue', event => {
@@ -470,10 +471,9 @@ export async function initUI(pubs) {
   });
 
   document.getElementById('btn-reset').addEventListener('click', () => {
-    searchInput.value = '';
+    if (searchInput) searchInput.value = '';
     updateCardSearchState('');
     beerCheckboxes.forEach(box => box.checked = false);
-    showFavoritesOnly = false;
     showAllVenues = false;
     closeFavoritesPanel();
     fitItaly({ animate: false });

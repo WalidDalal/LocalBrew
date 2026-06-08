@@ -96,9 +96,9 @@
 }
 
 .register {
-    min-height: 51px;
     background: linear-gradient(135deg, var(--amber), var(--amber-2));
     color: #2d1900;
+    font-weight: 800;
 }
 
 .btn:hover {
@@ -201,7 +201,8 @@
 
 /* ── Bottoni nav header (index + pagine interne) ── */
 .btn-map {
-    background: linear-gradient(135deg, var(--green), var(--green-2));
+    background: linear-gradient(135deg, #0d7a6e, #12a094);
+    border: none;
     color: #fff;
     display: inline-flex;
     align-items: center;

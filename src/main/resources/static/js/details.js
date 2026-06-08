@@ -2,9 +2,9 @@ import {createVenueReview, getActiveVenue, getCurrentUser, getVenueDrinks, getVe
 import {getFavorites, toggleFavorite} from './favorites.js';
 import {showToast} from './feedback.js';
 import {escapeHtml} from './utils.js';
+import {RATING_ICON, ratingIconHtml, starsHtml, setInteractiveStars} from './rating.js';
 
 const FALLBACK_IMAGE = 'assets/icons/pin.png';
-const RATING_ICON = 'fa-solid fa-beer-mug-empty';
 const REVIEWS_PAGE_SIZE = 5;
 
 function formatPrice(price) {
@@ -13,20 +13,15 @@ function formatPrice(price) {
 }
 
 // ── Stelle ────────────────────────────────────────────────────
-function ratingIconHtml(filled, extraClass = '') {
-    return `<i class="${RATING_ICON} rating-icon ${filled ? 'rating-icon--filled' : 'rating-icon--empty'} ${extraClass}"></i>`;
-}
 
-function starsHtml(rating, {interactive = false, size = 'md'} = {}) {
+// Stelle interattive (picker con bottoni): usate solo nei form di recensione.
+function starsHtmlInteractive(rating, size = 'md') {
     const full = Math.round(Number(rating) || 0);
     return Array.from({length: 5}, (_, i) => {
         const filled = i < full;
-        if (interactive) {
-            return `<button type="button" class="star-btn star-btn--${size} ${filled ? 'is-filled' : ''}" data-value="${i + 1}" aria-label="Voto ${i + 1}">`
-                + ratingIconHtml(filled)
-                + `</button>`;
-        }
-        return ratingIconHtml(filled, `detail-star detail-star--${size}`);
+        return `<button type="button" class="star-btn star-btn--${size} ${filled ? 'is-filled' : ''}" data-value="${i + 1}" aria-label="Voto ${i + 1}">`
+            + ratingIconHtml(filled)
+            + `</button>`;
     }).join('');
 }
 
@@ -37,7 +32,7 @@ function reviewSummaryHtml(reviews) {
     <div class="detail-review-summary">
       <span class="detail-review-avg">${avg.toFixed(1)}</span>
       <div>
-        <div class="detail-stars-row">${starsHtml(avg, {size: 'lg'})}</div>
+        <div class="detail-stars-row">${starsHtml(avg, 'detail-star detail-star--lg')}</div>
         <span class="detail-review-count">${reviews.length} recension${reviews.length === 1 ? 'e' : 'i'}</span>
       </div>
     </div>`;
@@ -71,7 +66,7 @@ function renderReviews(reviews) {
       ${reviews.map((review, index) => `
         <article class="detail-review ${index >= REVIEWS_PAGE_SIZE ? 'is-hidden' : ''}">
           <div class="detail-review-header">
-            <div class="detail-stars-row">${starsHtml(review.rating)}</div>
+            <div class="detail-stars-row">${starsHtml(review.rating, 'detail-star')}</div>
             <span class="detail-review-author">
               <i class="fa-solid fa-user"></i> ${escapeHtml(review.username || 'Utente')}
             </span>
@@ -92,7 +87,7 @@ function renderReviewForm(user, venueId) {
       <h3>Lascia una recensione</h3>
       <input type="hidden" name="venueId" value="${escapeHtml(venueId)}">
       <div class="detail-star-picker" id="star-picker" role="group" aria-label="Seleziona voto">
-        ${starsHtml(0, {interactive: true, size: 'xl'})}
+        ${starsHtmlInteractive(0, 'xl')}
       </div>
       <input type="hidden" name="rating" id="review-rating" value="" required>
       <p class="detail-star-hint" id="star-hint">Tocca una birra per votare</p>
@@ -258,13 +253,7 @@ function bindStarPicker() {
     const labels = ['', 'Pessimo', 'Scarso', 'Nella media', 'Buono', 'Eccellente'];
 
     function setStars(value, commit = false) {
-        picker.querySelectorAll('.star-btn').forEach((btn, i) => {
-            const position = i + 1;
-            const filled = position <= value;
-            const icon = btn.querySelector('i');
-            icon.className = `${RATING_ICON} rating-icon`;
-            btn.classList.toggle('is-filled', filled);
-        });
+        setInteractiveStars(picker, value);
         if (commit && value) {
             input.value = value;
             hint.textContent = labels[value];

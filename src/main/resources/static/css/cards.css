@@ -232,14 +232,14 @@
 
 .card-map-button,
 .card-google-button{
-  background:rgba(255,255,255,.9);
-  border:1px solid rgba(255,255,255,.35);
-  color:var(--green);
+  background:var(--green);
+  border:1px solid transparent;
+  color:#fff;
   box-shadow:0 8px 18px rgba(0,0,0,.12);
 }
 .card-details-button{
   background:linear-gradient(135deg,var(--amber),var(--amber-2));
-  color:#2d1900;
+  color:#fff;
   box-shadow:0 8px 18px rgba(244,182,61,.22);
 }
 .card-map-button:hover,
@@ -251,6 +251,7 @@
 .card-google-button:hover{
   background:var(--green-2);
   color:#fff;
+  border-color:transparent;
 }
 .card-details-button:hover{
   box-shadow:0 10px 22px rgba(244,182,61,.32);
@@ -265,17 +266,17 @@
   padding:11px 18px;
   border:1px solid var(--line);
   border-radius:14px;
-  background:var(--paper);
-  color:var(--green);
+  background:var(--green);
+  color:#fff;
   font-weight:800;
-  box-shadow:0 8px 18px rgba(44,27,15,.08);
+  box-shadow:0 8px 18px rgba(21,79,31,.18);
   transition:background .2s, color .2s, border-color .2s, transform .2s, box-shadow .2s;
 }
 .all-btn:hover{
   transform:translateY(-2px);
-  border-color:var(--green);
-  background:#fff8ec;
-  box-shadow:0 12px 24px rgba(44,27,15,.12);
+  border-color:var(--green-2);
+  background:var(--green-2);
+  box-shadow:0 12px 24px rgba(21,79,31,.22);
 }
 
 .card-body{

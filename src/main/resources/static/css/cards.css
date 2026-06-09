@@ -9,7 +9,7 @@
   overflow-y:auto;
   align-content:start;
   grid-auto-rows:minmax(310px, auto);
-  padding:14px 18px 26px 10px;
+  padding:22px 28px 36px 18px;
   scrollbar-gutter:stable;
   scrollbar-width:thin;
   scrollbar-color:var(--scrollbar-thumb) var(--scrollbar-track);
@@ -49,11 +49,13 @@
   border:0;
   border-radius:18px;
   overflow:hidden;
-  box-shadow:0 14px 34px rgba(44,27,15,.14);
-  transition:.25s;
+  box-shadow:none;
+  transition:transform .25s ease, outline-color .25s ease, filter .25s ease;
   display:flex;
   flex-direction:column;
   isolation:isolate;
+  outline:1px solid transparent;
+  outline-offset:-1px;
 }
 
 .card::after{
@@ -68,13 +70,14 @@
 
 .card:hover{
   transform:translateY(-5px);
-  box-shadow:0 20px 48px rgba(44,27,15,.22);
+  outline-color:rgba(244,182,61,.7);
 }
 
 /* Stato temporaneo usato quando il popup riporta alla card. */
 .card.is-focused{
   border-color:var(--amber);
-  box-shadow:0 0 0 4px rgba(244,182,61,.24),0 20px 45px rgba(44,27,15,.16);
+  outline:4px solid rgba(244,182,61,.28);
+  outline-offset:0;
 }
 
 /* Finestra della fotografia: l'immagine piu' alta viene ritagliata al centro. */

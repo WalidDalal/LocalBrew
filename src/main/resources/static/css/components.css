@@ -1,5 +1,11 @@
 /* Header: logo a sinistra e pulsanti account a destra. */
+.page-shell {
+    --header-height: 91px;
+}
+
 .header {
+    --header-height: 91px;
+    min-height: var(--header-height);
     background: rgba(255, 255, 255, .92);
     padding: 18px 28px;
     display: flex;
@@ -18,8 +24,21 @@
 
 .logo {
     width: 150px;
-    height: auto;
-    object-fit: contain
+    height: 54px;
+    object-fit: contain;
+    flex: 0 0 150px;
+}
+
+.logo-dark {
+    display: none;
+}
+
+[data-theme="dark"] .logo-light {
+    display: none;
+}
+
+[data-theme="dark"] .logo-dark {
+    display: block;
 }
 
 .logo-text p {
@@ -64,10 +83,16 @@
 }
 
 .btn {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 7px;
+    min-height: 44px;
     padding: 13px 20px;
+    border: 1px solid transparent;
     border-radius: 999px;
     font-weight: 800;
-    transition: .25s;
+    transition: var(--button-transition);
 }
 
 .login {
@@ -76,14 +101,25 @@
     color: var(--green);
 }
 
+.login:hover {
+    background: #f7f3ec;
+    border-color: var(--green);
+    color: var(--green-2);
+}
+
 .register {
-    min-height: 51px;
-    background: linear-gradient(135deg, var(--amber), var(--amber-2));
-    color: #2d1900;
+    background: var(--action-amber-bg);
+    color: var(--action-text);
+    font-weight: 800;
+}
+
+.register:hover {
+    background: var(--action-amber-bg-hover);
+    color: var(--action-text);
 }
 
 .btn:hover {
-    transform: translateY(-2px)
+    filter: none;
 }
 
 /* Footer ────────────────────────────────────────────────── */
@@ -127,20 +163,15 @@
     color: var(--green-2);
 }
 
-/* Nascondi le parti non più usate */
-.footer-top,
-.footer-nav,
-.footer-nav-title,
-.footer-divider,
-.footer-bottom,
-.footer-box {
-    display: none;
-}
-
 
 /* Layout compatto su mobile. */
 @media (max-width: 760px) {
+    .page-shell {
+        --header-height: 176px;
+    }
+
     .header {
+        --header-height: 176px;
         flex-direction: column;
         align-items: flex-start
     }
@@ -173,4 +204,55 @@
     .btn {
         flex: 1
     }
+}
+
+/* ── Bottoni nav header (index + pagine interne) ── */
+.btn-map {
+    background: var(--action-green-bg);
+    color: var(--action-text);
+    text-decoration: none;
+    filter: none;
+}
+
+.btn-map:hover {
+    background: var(--action-green-bg);
+    color: var(--action-text);
+    filter: brightness(.9) saturate(1.04);
+}
+
+.btn-dashboard {
+    background: var(--action-amber-bg);
+    color: var(--action-text);
+    text-decoration: none;
+    filter: none;
+}
+
+.btn-dashboard:hover {
+    background: var(--action-amber-bg);
+    color: var(--action-text);
+    filter: brightness(.9) saturate(1.04);
+}
+
+.btn-logout {
+    background: var(--logout-bg);
+    color: var(--logout-text);
+    cursor: pointer;
+    font-family: inherit;
+}
+.btn-logout:hover {
+    background: var(--logout-bg-hover);
+    color: var(--logout-text);
+}
+
+/* Bottone Profilo — stesso stile di .login (bianco con bordo) */
+.profile-btn {
+    background: var(--paper);
+    border: 1px solid var(--line);
+    color: var(--green);
+    text-decoration: none;
+}
+.profile-btn:hover {
+    background: #f7f3ec;
+    border-color: var(--green);
+    color: var(--green-2);
 }

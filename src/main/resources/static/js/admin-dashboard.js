@@ -4,26 +4,31 @@ import {
   deleteVenue,
   deleteVenueReview,
   getAdminVenues,
+  getOwnerVenueDrinks,
   getVenueReviews,
+  getDrinks,
   suspendVenue,
-  uploadDrinkImage
+  uploadDrinkImage,
+  updateDrink,
+  deleteDrink
 } from './api.js';
 import './logout.js';
 import {confirmAction, showToast} from './feedback.js';
-import {requireRole} from './role-guard.js';
+import {requireAnyRole} from './role-guard.js';
 import {escapeHtml} from './utils.js';
 
 // ── DOM refs ─────────────────────────────────────────────────
 const container        = document.getElementById('admin-venues');
 const venueSearch      = document.getElementById('admin-venue-search');
-const statusPills      = document.querySelectorAll('.admin-status-pill');
+const statusPills      = document.querySelectorAll('[data-status]');
 const reviewHint       = document.getElementById('admin-review-hint');
 const reviewVenueName  = document.getElementById('admin-review-venue-name');
 const reviewList       = document.getElementById('admin-reviews');
-const openDrawerBtn    = document.getElementById('admin-open-drawer');
-const closeDrawerBtn   = document.getElementById('admin-close-drawer');
-const drawer           = document.getElementById('admin-drink-drawer');
-const overlay          = document.getElementById('admin-drawer-overlay');
+const openCreateDrinkBtn   = document.getElementById('admin-open-create-drink');
+const closeCreateDrinkBtn  = document.getElementById('admin-close-create-drink');
+const cancelCreateDrinkBtn = document.getElementById('admin-cancel-create-drink');
+const createDrinkModal     = document.getElementById('admin-drink-create-modal');
+const createDrinkBackdrop  = document.getElementById('admin-drink-create-backdrop');
 const drinkForm        = document.getElementById('admin-drink-form');
 const drinkMessage     = document.getElementById('admin-drink-message');
 
@@ -41,7 +46,28 @@ const drinkImagePreview  = document.getElementById('admin-drink-image-preview');
 const drinkImageFilename = document.getElementById('admin-drink-image-filename');
 const drinkImageRemove   = document.getElementById('admin-drink-image-remove');
 
+const editDrinkModal       = document.getElementById('admin-drink-edit-modal');
+const editDrinkBackdrop    = document.getElementById('admin-drink-edit-backdrop');
+const editDrinkForm        = document.getElementById('admin-drink-edit-form');
+const editDrinkClose       = document.getElementById('admin-edit-drink-close');
+const editDrinkCancel      = document.getElementById('admin-edit-drink-cancel');
+const editDrinkMessage     = document.getElementById('admin-drink-edit-message');
+const editDrinkFields = {
+    id:          document.getElementById('edit-drink-id'),
+    name:        document.getElementById('edit-drink-name'),
+    description: document.getElementById('edit-drink-description'),
+    category:    document.getElementById('edit-drink-category'),
+    abv:         document.getElementById('edit-drink-abv'),
+    origin:      document.getElementById('edit-drink-origin'),
+    imageUri:    document.getElementById('edit-drink-image-uri')
+};
+const editDrinkImageFile     = document.getElementById('edit-drink-image-file');
+const editDrinkImagePreview  = document.getElementById('edit-drink-image-preview');
+const editDrinkImageFilename = document.getElementById('edit-drink-image-filename');
+const editDrinkImageRemove   = document.getElementById('edit-drink-image-remove');
+
 const DRINK_IMAGE_LABEL = 'Scegli immagine (JPG, PNG, WEBP · max 5 MB)';
+const EDIT_DRINK_IMAGE_LABEL = 'Scegli immagine (JPG, PNG, WEBP - max 5 MB)';
 
 // ── Stato ────────────────────────────────────────────────────
 let adminVenues   = [];
@@ -49,23 +75,48 @@ let activeStatus  = '';        // '' | 'ACTIVE' | 'SUSPENDED' | 'PENDING'
 const reviewCache = {};
 
 // ── Drawer ───────────────────────────────────────────────────
-function openDrawer()  {
-    drawer.classList.add('admin-drawer--open');
-    overlay.classList.add('admin-drawer-overlay--visible');
-    document.body.style.overflow = 'hidden';
+function syncBodyLock() {
+    const createModalOpen = createDrinkModal && !createDrinkModal.classList.contains('hidden');
+    const editModalOpen = editDrinkModal && !editDrinkModal.classList.contains('hidden');
+    document.body.style.overflow = createModalOpen || editModalOpen ? 'hidden' : '';
+}
+
+function openCreateDrinkModal() {
+    createDrinkModal.classList.remove('hidden');
+    createDrinkBackdrop.classList.remove('hidden');
+    createDrinkBackdrop.setAttribute('aria-hidden', 'false');
+    syncBodyLock();
     drinkFields.name.focus();
 }
 
-function closeDrawer() {
-    drawer.classList.remove('admin-drawer--open');
-    overlay.classList.remove('admin-drawer-overlay--visible');
-    document.body.style.overflow = '';
+function closeCreateDrinkModal() {
+    createDrinkModal.classList.add('hidden');
+    createDrinkBackdrop.classList.add('hidden');
+    createDrinkBackdrop.setAttribute('aria-hidden', 'true');
+    drinkForm.reset();
+    resetImageField({
+        fileInput: drinkImageFile, preview: drinkImagePreview,
+        filename: drinkImageFilename, removeBtn: drinkImageRemove,
+        hiddenInput: drinkFields.imageUri, defaultLabel: DRINK_IMAGE_LABEL
+    });
+    showDrinkMessage('');
+    syncBodyLock();
 }
 
-openDrawerBtn.addEventListener('click', openDrawer);
-closeDrawerBtn.addEventListener('click', closeDrawer);
-overlay.addEventListener('click', closeDrawer);
-document.addEventListener('keydown', e => { if (e.key === 'Escape') closeDrawer(); });
+openCreateDrinkBtn?.addEventListener('click', openCreateDrinkModal);
+closeCreateDrinkBtn?.addEventListener('click', closeCreateDrinkModal);
+cancelCreateDrinkBtn?.addEventListener('click', closeCreateDrinkModal);
+createDrinkBackdrop?.addEventListener('click', closeCreateDrinkModal);
+document.addEventListener('keydown', e => {
+    if (e.key !== 'Escape') return;
+    if (editDrinkModal && !editDrinkModal.classList.contains('hidden')) {
+        closeEditDrinkModal();
+        return;
+    }
+    if (createDrinkModal && !createDrinkModal.classList.contains('hidden')) {
+        closeCreateDrinkModal();
+    }
+});
 
 // ── Upload helpers ───────────────────────────────────────────
 function setupImageUpload({ fileInput, preview, filename, removeBtn, hiddenInput, defaultLabel }) {
@@ -100,6 +151,62 @@ function resetImageField({ fileInput, preview, filename, removeBtn, hiddenInput,
     removeBtn.classList.add('hidden');
     filename.textContent = defaultLabel;
     hiddenInput.value = '';
+}
+
+function fillEditDrinkImage(url) {
+    editDrinkImageFile.value = '';
+    editDrinkFields.imageUri.value = url || '';
+    editDrinkFields.imageUri.dataset.cleared = 'false';
+
+    if (url) {
+        editDrinkImagePreview.src = url;
+        editDrinkImagePreview.classList.remove('hidden');
+        editDrinkImageRemove.classList.remove('hidden');
+        editDrinkImageFilename.textContent = 'Immagine attuale';
+        return;
+    }
+
+    editDrinkImagePreview.src = '';
+    editDrinkImagePreview.classList.add('hidden');
+    editDrinkImageRemove.classList.add('hidden');
+    editDrinkImageFilename.textContent = EDIT_DRINK_IMAGE_LABEL;
+}
+
+async function resolveEditDrinkImageUri() {
+    if (editDrinkImageFile.files[0]) return await uploadDrinkImage(editDrinkImageFile.files[0]);
+    if (editDrinkFields.imageUri.dataset.cleared === 'true') return '';
+    return editDrinkFields.imageUri.value.trim() || null;
+}
+
+function showEditDrinkMessage(text, type = '') {
+    editDrinkMessage.textContent = text;
+    editDrinkMessage.classList.remove('profile-form-msg--error', 'profile-form-msg--ok');
+    if (type) editDrinkMessage.classList.add(type);
+}
+
+function openEditDrinkModal(drink) {
+    editDrinkFields.id.value = drink.id;
+    editDrinkFields.name.value = drink.name || '';
+    editDrinkFields.description.value = drink.description || '';
+    editDrinkFields.category.value = drink.category || 'IPA';
+    editDrinkFields.abv.value = drink.abv != null ? drink.abv : '';
+    editDrinkFields.origin.value = drink.origin || '';
+    fillEditDrinkImage(drink.imageUri);
+    showEditDrinkMessage('');
+
+    editDrinkBackdrop.classList.remove('hidden');
+    editDrinkModal.classList.remove('hidden');
+    syncBodyLock();
+    editDrinkFields.name.focus();
+}
+
+function closeEditDrinkModal() {
+    editDrinkBackdrop.classList.add('hidden');
+    editDrinkModal.classList.add('hidden');
+    editDrinkForm.reset();
+    fillEditDrinkImage(null);
+    showEditDrinkMessage('');
+    syncBodyLock();
 }
 
 // ── Helpers ──────────────────────────────────────────────────
@@ -165,8 +272,14 @@ function renderVenues(venues) {
 
 // ── Caricamento ───────────────────────────────────────────────
 async function loadVenues() {
+    if (!container) return;
     container.innerHTML = '<p class="dashboard-message">Caricamento locali...</p>';
-    adminVenues = await getAdminVenues();
+    try {
+        adminVenues = await getAdminVenues();
+    } catch (err) {
+        container.innerHTML = `<p class="dashboard-message">Errore caricamento locali: ${escapeHtml(err.message)}</p>`;
+        return;
+    }
 
     await Promise.allSettled(adminVenues.map(async v => {
         try {
@@ -264,7 +377,7 @@ function readDrinkForm() {
 }
 
 // ── Init ──────────────────────────────────────────────────────
-const user = await requireRole('ADMIN');
+const user = await requireAnyRole('ADMIN');
 
 if (user) {
     await loadVenues();
@@ -274,6 +387,21 @@ if (user) {
         filename: drinkImageFilename, removeBtn: drinkImageRemove,
         hiddenInput: drinkFields.imageUri, defaultLabel: DRINK_IMAGE_LABEL
     });
+
+    setupImageUpload({
+        fileInput: editDrinkImageFile, preview: editDrinkImagePreview,
+        filename: editDrinkImageFilename, removeBtn: editDrinkImageRemove,
+        hiddenInput: editDrinkFields.imageUri, defaultLabel: EDIT_DRINK_IMAGE_LABEL
+    });
+    editDrinkImageFile.addEventListener('change', () => {
+        editDrinkFields.imageUri.dataset.cleared = 'false';
+    });
+    editDrinkImageRemove.addEventListener('click', () => {
+        editDrinkFields.imageUri.dataset.cleared = 'true';
+    });
+    editDrinkClose?.addEventListener('click', closeEditDrinkModal);
+    editDrinkCancel?.addEventListener('click', closeEditDrinkModal);
+    editDrinkBackdrop?.addEventListener('click', closeEditDrinkModal);
 
     drinkForm.addEventListener('submit', async event => {
         event.preventDefault();
@@ -287,12 +415,49 @@ if (user) {
                 filename: drinkImageFilename, removeBtn: drinkImageRemove,
                 hiddenInput: drinkFields.imageUri, defaultLabel: DRINK_IMAGE_LABEL
             });
-            showDrinkMessage('Drink creato.', 'is-success');
             showToast('Drink creato.');
-            closeDrawer();
+            closeCreateDrinkModal();
         } catch (error) {
             showDrinkMessage(error.message, 'is-error');
             showToast(error.message, 'error');
+        }
+    });
+
+    editDrinkForm.addEventListener('submit', async event => {
+        event.preventDefault();
+        const id = editDrinkFields.id.value;
+        const submitButton = editDrinkForm.querySelector('button[type="submit"]');
+        const name = editDrinkFields.name.value.trim();
+
+        if (!name) {
+            showEditDrinkMessage('Nome obbligatorio.', 'profile-form-msg--error');
+            return;
+        }
+
+        submitButton.disabled = true;
+        showEditDrinkMessage('Salvataggio...');
+
+        try {
+            const imageUri = await resolveEditDrinkImageUri();
+            const abv = editDrinkFields.abv.value;
+            const updated = await updateDrink(id, {
+                name,
+                description: editDrinkFields.description.value.trim(),
+                category: editDrinkFields.category.value,
+                abv: abv !== '' ? Number(abv) : null,
+                origin: editDrinkFields.origin.value.trim(),
+                imageUri
+            });
+            const idx = drinksCache.findIndex(d => String(d.id) === String(id));
+            if (idx >= 0) drinksCache[idx] = updated;
+            showToast('Drink aggiornato.');
+            closeEditDrinkModal();
+            applyDrinkFilters();
+        } catch (error) {
+            showEditDrinkMessage(error.message, 'profile-form-msg--error');
+            showToast(error.message, 'error');
+        } finally {
+            submitButton.disabled = false;
         }
     });
 
@@ -374,4 +539,152 @@ if (user) {
             button.disabled = false;
         }
     });
+}
+
+// Tab switching
+const tabButtons  = document.querySelectorAll('.admin-tab');
+const tabPanelMap = { venues: document.getElementById('admin-tab-venues'), drinks: document.getElementById('admin-tab-drinks') };
+const drinkToolbar = document.getElementById('admin-drinks-toolbar');
+
+tabButtons.forEach(btn => {
+    btn.addEventListener('click', () => {
+        tabButtons.forEach(b => { b.classList.remove('admin-tab--active'); b.setAttribute('aria-selected', 'false'); });
+        btn.classList.add('admin-tab--active');
+        btn.setAttribute('aria-selected', 'true');
+        const tab = btn.dataset.tab;
+        Object.entries(tabPanelMap).forEach(([key, panel]) => {
+            if (panel) panel.classList.toggle('hidden', key !== tab);
+        });
+        drinkToolbar?.classList.toggle('hidden', tab !== 'drinks');
+        if (tab === 'drinks') renderDrinksTab();
+    });
+});
+
+// Drinks tab
+let drinksCache    = null;
+let drinkVenueMap  = null; // Map<drinkId, [{id, name}]>
+let activeDrinkCat = '';
+
+const drinksList  = document.getElementById('admin-drinks-list');
+const drinkSearch = document.getElementById('admin-drink-search');
+const catPills    = document.querySelectorAll('#admin-drinks-toolbar [data-category]');
+
+catPills.forEach(pill => {
+    pill.addEventListener('click', () => {
+        catPills.forEach(p => p.classList.remove('admin-status-pill--active'));
+        pill.classList.add('admin-status-pill--active');
+        activeDrinkCat = pill.dataset.category;
+        applyDrinkFilters();
+    });
+});
+
+drinkSearch?.addEventListener('input', applyDrinkFilters);
+
+function applyDrinkFilters() {
+    if (!drinksCache) return;
+    const q   = (drinkSearch?.value || '').toLowerCase().trim();
+    const cat = activeDrinkCat;
+    const filtered = drinksCache.filter(d => {
+        const matchCat  = !cat || (d.category || '').toUpperCase() === cat.toUpperCase();
+        const matchText = !q   || [d.name, d.description, d.category].join(' ').toLowerCase().includes(q);
+        return matchCat && matchText;
+    });
+    renderDrinkCards(filtered);
+}
+
+function renderDrinkCards(drinks) {
+    if (!drinks.length) {
+        drinksList.innerHTML = '<p class="dashboard-message">Nessun drink trovato.</p>';
+        return;
+    }
+    drinksList.innerHTML = '<div class="admin-drinks-grid">' + drinks.map(d => {
+        const count = (drinkVenueMap && drinkVenueMap.get(String(d.id))) || 0;
+        const venueLabel = count === 1 ? '1 locale' : `${count} locali`;
+        const abvLabel = d.abv != null ? `${escapeHtml(String(d.abv))}%` : 'N/D';
+        return `
+        <article class="admin-drink-card" data-id="${escapeHtml(String(d.id))}">
+            <div class="admin-drink-card__inner">
+                ${d.imageUri ? `<img class="admin-drink-cover" src="${escapeHtml(d.imageUri)}" alt="${escapeHtml(d.name)}">` : '<div class="admin-drink-cover admin-drink-cover--placeholder"><i class="fa-solid fa-beer-mug-empty"></i></div>'}
+                <div class="admin-drink-body">
+                    <div class="admin-drink-header">
+                        <span class="admin-drink-chip admin-drink-category">
+                            ${escapeHtml(d.category || '-')}
+                            <i class="fa-solid fa-circle-check"></i>
+                        </span>
+                        <strong>${escapeHtml(d.name)}</strong>
+                    </div>
+                    <p class="admin-drink-desc">${escapeHtml(d.description || 'Nessuna descrizione disponibile.')}</p>
+                    <div class="admin-drink-footer">
+                        <div class="admin-drink-stats">
+                            <span class="admin-drink-chip">
+                                <i class="fa-solid fa-percent"></i>
+                                ${abvLabel}
+                            </span>
+                            <span class="admin-drink-chip">
+                                <i class="fa-solid fa-store"></i>
+                                ${venueLabel}
+                            </span>
+                        </div>
+                        <div class="admin-drink-actions">
+                            <button type="button" class="drink-edit-btn">
+                                Modifica
+                                <i class="fa-solid fa-pen"></i>
+                            </button>
+                            <button type="button" class="drink-delete-btn" aria-label="Elimina ${escapeHtml(d.name)}">
+                                <i class="fa-solid fa-trash"></i>
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </article>`;
+    }).join('') + '</div>';
+}
+
+drinksList?.addEventListener('click', async e => {
+    const card = e.target.closest('.admin-drink-card');
+    if (!card) return;
+    const id = card.dataset.id;
+
+    if (e.target.closest('.drink-edit-btn')) {
+        const drink = drinksCache.find(d => String(d.id) === String(id));
+        if (drink) openEditDrinkModal(drink);
+        return;
+    }
+
+    if (e.target.closest('.drink-delete-btn')) {
+        const confirmed = await confirmAction({ title: 'Eliminare il drink?', message: 'Azione non reversibile.', confirmText: 'Elimina', danger: true });
+        if (!confirmed) return;
+        try {
+            await deleteDrink(id);
+            drinksCache = drinksCache.filter(d => String(d.id) !== String(id));
+            showToast('Drink eliminato.');
+            applyDrinkFilters();
+        } catch (err) { showToast(err.message, 'error'); }
+    }
+});
+
+async function renderDrinksTab() {
+    drinksList.innerHTML = '<p class="dashboard-message">Caricamento drink...</p>';
+    try {
+        if (!drinksCache) {
+            // Carica drink globali e tutti i locali admin in parallelo
+            const [drinks, venues] = await Promise.all([getDrinks(), getAdminVenues()]);
+            drinksCache = drinks;
+
+            // Per ogni locale, carica i suoi drink e costruisce drink->locali
+            // VenueDrinkResponse ha campo drinkId che corrisponde a DrinkResponse.id
+            const countMap = new Map();
+            await Promise.all(venues.map(async v => {
+                try {
+                    const vd = await getOwnerVenueDrinks(v.id);
+                    vd.forEach(d => { const k = String(d.drinkId); countMap.set(k, (countMap.get(k) || 0) + 1); });
+                } catch { /* nessun drink */ }
+            }));
+            drinkVenueMap = countMap;
+        }
+        applyDrinkFilters();
+    } catch (err) {
+        drinksList.innerHTML = `<p class="dashboard-message">Errore: ${escapeHtml(err.message)}</p>`;
+    }
 }

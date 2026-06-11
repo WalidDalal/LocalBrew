@@ -131,6 +131,10 @@ export function getVenueDrinks(venueId) {
   return apiRequest(`/api/v1/public/venues/${venueId}/drinks`);
 }
 
+export function getOwnerVenueDrinks(venueId) {
+  return apiRequest(`/api/v1/owner/venues/${venueId}/drinks`, { auth: true });
+}
+
 export function getVenueReviews(venueId) {
   return apiRequest(`/api/v1/public/venues/${venueId}/reviews`);
 }
@@ -287,4 +291,19 @@ export async function uploadDrinkImage(file) {
   const data = await parseResponse(response);
   if (!response.ok) throw new Error(data?.message || `Errore ${response.status}`);
   return data.url;
+}
+
+export function updateDrink(id, drink) {
+  return apiRequest(`/api/v1/owner/drinks/${id}`, {
+    method: 'PUT',
+    auth: true,
+    body: drink
+  });
+}
+
+export function deleteDrink(id) {
+  return apiRequest(`/api/v1/owner/drinks/${id}`, {
+    method: 'DELETE',
+    auth: true
+  });
 }

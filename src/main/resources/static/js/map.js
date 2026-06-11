@@ -32,29 +32,40 @@ const DARK_STYLE = 'dark';
 
 const mapLayers = {
     [SIMPLIFIED_STYLE]: L.tileLayer('https://{s}.basemaps.cartocdn.com/rastertiles/voyager_labels_under/{z}/{x}/{y}{r}.png', {
-        attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a>',
+        attribution: '',
         subdomains: 'abcd',
         maxZoom: 20
     }),
     [SATELLITE_STYLE]: L.tileLayer('https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}', {
-        attribution: 'Tiles &copy; Esri, Maxar, Earthstar Geographics, and the GIS User Community',
+        attribution: '',
         maxZoom: 19
     }),
     [DARK_STYLE]: L.tileLayer('https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png', {
-        attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a>',
+        attribution: '',
         subdomains: 'abcd',
         maxZoom: 20
     })
 };
 
 // Sincronizza il tile layer con il tema UI (chiamata da theme.js via callback).
+let lastNonSatStyle = SIMPLIFIED_STYLE;
+
 export function syncMapTheme() {
     const isDark = document.documentElement.getAttribute('data-theme') === 'dark';
-    // Se siamo già su satellite non sovrascriviamo la scelta dell'utente.
-    if (currentMapStyle === SATELLITE_STYLE) return;
     const target = isDark ? DARK_STYLE : SIMPLIFIED_STYLE;
-    if (target === currentMapStyle) return;
-    map.removeLayer(mapLayers[currentMapStyle]);
+
+    // Aggiorna sempre lastNonSatStyle (anche se siamo su satellite)
+    const prev = lastNonSatStyle;
+    lastNonSatStyle = target;
+
+    // Se siamo su satellite non cambiare il layer visibile, solo memorizza
+    if (currentMapStyle === SATELLITE_STYLE) return;
+
+    // Nessun cambio visivo necessario
+    if (target === prev && map.hasLayer(mapLayers[target])) return;
+
+    // Rimuovi il vecchio layer tema e aggiungi il nuovo
+    if (map.hasLayer(mapLayers[prev])) map.removeLayer(mapLayers[prev]);
     mapLayers[target].addTo(map);
     currentMapStyle = target;
 }
@@ -70,7 +81,7 @@ function updateMapStyleButton(button) {
     const icon = button.querySelector('i');
     const label = button.querySelector('span');
 
-    button.classList.toggle('active', isSatellite);
+    button.classList.remove('active');
     button.setAttribute('aria-pressed', String(isSatellite));
     button.setAttribute(
         'aria-label',
@@ -82,7 +93,7 @@ function updateMapStyleButton(button) {
     }
 
     if (label) {
-        label.textContent = isSatellite ? 'Semplice' : 'Satellite';
+        label.textContent = isSatellite ? 'Mappa' : 'Satellite';
     }
 }
 
@@ -90,9 +101,21 @@ function setMapStyle(nextStyle) {
     if (nextStyle === currentMapStyle || !mapLayers[nextStyle]) return;
 
     map.removeLayer(mapLayers[currentMapStyle]);
-    mapLayers[nextStyle].addTo(map);
-    currentMapStyle = nextStyle;
-    localStorage.setItem(MAP_STYLE_STORAGE_KEY, currentMapStyle);
+
+    // Se stiamo uscendo dal satellite, ripristina il layer tema corretto
+    // (dark o simplified) invece di tornare sempre a simplified
+    const actualTarget = (nextStyle === SIMPLIFIED_STYLE)
+        ? lastNonSatStyle
+        : nextStyle;
+
+    mapLayers[actualTarget].addTo(map);
+    currentMapStyle = actualTarget;
+    // In localStorage salviamo solo se satellite, altrimenti puliamo
+    if (actualTarget === SATELLITE_STYLE) {
+        localStorage.setItem(MAP_STYLE_STORAGE_KEY, SATELLITE_STYLE);
+    } else {
+        localStorage.removeItem(MAP_STYLE_STORAGE_KEY);
+    }
 }
 
 function initMapStyleToggle() {
@@ -105,6 +128,17 @@ function initMapStyleToggle() {
         setMapStyle(currentMapStyle === SATELLITE_STYLE ? SIMPLIFIED_STYLE : SATELLITE_STYLE);
         updateMapStyleButton(button);
     });
+}
+
+
+// Restituisce i bounds attuali della mappa (usato per filtrare le card).
+export function getMapBounds() {
+    return map.getBounds();
+}
+
+// Registra un listener sul moveend per aggiornare le card quando la mappa si sposta.
+export function onMapMoveEnd(callback) {
+    map.on('moveend', callback);
 }
 
 export function fitItaly(options = {}) {

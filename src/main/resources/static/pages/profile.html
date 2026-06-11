@@ -12,11 +12,9 @@
     <link rel="shortcut icon" href="../assets/icons/favicon.png" type="image/x-icon">
 </head>
 
-<body class="auth-page">
-<main class="auth-shell profile-shell">
-    <section class="auth-card profile-card">
-
-        <div class="dashboard-header">
+<body class="auth-page app-page">
+<main class="profile-shell app-shell">
+    <header class="app-page-header dashboard-header">
             <div class="profile-header-user">
                 <div class="profile-avatar-lg"><i class="fa-solid fa-user"></i></div>
                 <div>
@@ -26,18 +24,19 @@
                 </div>
             </div>
             <div class="dashboard-header-actions">
-                <a class="dashboard-link hidden" id="profile-dashboard-link" href="#">
+                <a class="btn btn-dashboard hidden" id="profile-dashboard-link" href="#">
                     <i class="fa-solid fa-gauge-high"></i> Dashboard
                 </a>
-                <a class="dashboard-link" href="../index.html">
+                <a class="btn btn-map" href="../index.html">
                     <i class="fa-solid fa-map-location-dot"></i> Mappa
                 </a>
-                <button type="button" class="dashboard-link dashboard-logout-button" data-logout-button>
+                <button type="button" class="btn btn-logout" data-logout-button>
                     <i class="fa-solid fa-right-from-bracket"></i> Esci
                 </button>
             </div>
-        </div>
+    </header>
 
+    <section class="app-page-body profile-card">
         <div class="profile-layout">
 
             <nav class="profile-nav" id="profile-nav" aria-label="Sezioni profilo">
@@ -50,9 +49,9 @@
                     <i class="fa-solid fa-comments"></i> Le mie recensioni
                 </button>
                 <!-- Solo OWNER -->
-                <button class="profile-nav-item hidden" data-section="locali">
+                <a class="profile-nav-item hidden btn-nav-locali" href="owner-dashboard.html" id="nav-locali-link">
                     <i class="fa-solid fa-store"></i> I miei locali
-                </button>
+                </a>
                 <!-- Solo ADMIN -->
                 <button class="profile-nav-item hidden" data-section="admin">
                     <i class="fa-solid fa-shield-halved"></i> Amministrazione

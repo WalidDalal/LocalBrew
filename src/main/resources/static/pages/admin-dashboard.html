@@ -12,31 +12,62 @@
     <link rel="shortcut icon" href="../assets/icons/favicon.png" type="image/x-icon">
 </head>
 
-<body class="auth-page">
-<main class="auth-shell dashboard-shell">
-    <section class="auth-card dashboard-card">
-
-        <div class="dashboard-header">
+<body class="auth-page app-page">
+<main class="dashboard-shell app-shell">
+    <header class="app-page-header dashboard-header">
             <div>
                 <h1>Amministrazione</h1>
                 <p>Gestisci locali e recensioni.</p>
             </div>
             <div class="dashboard-header-actions">
-                <button type="button" class="admin-new-drink-btn" id="admin-open-drawer">
+                <button type="button" class="admin-new-drink-btn" id="admin-open-create-drink">
                     <i class="fa-solid fa-beer-mug-empty"></i> Nuovo drink
                 </button>
-                <a class="dashboard-link" href="profile.html">
+                <a class="btn profile-btn" href="profile.html">
                     <i class="fa-solid fa-user"></i> Profilo
                 </a>
-                <a class="dashboard-link" href="../index.html">
+                <a class="btn btn-map" href="../index.html">
                     <i class="fa-solid fa-map-location-dot"></i> Mappa
                 </a>
-                <button type="button" class="dashboard-link dashboard-logout-button" data-logout-button>
+                <button type="button" class="btn btn-logout" data-logout-button>
                     <i class="fa-solid fa-right-from-bracket"></i> Esci
                 </button>
             </div>
+    </header>
+
+    <section class="app-page-body dashboard-card">
+
+        <!-- Tab navigazione -->
+        <div class="admin-tabs-row">
+            <div class="admin-tabs" role="tablist">
+                <button class="admin-tab admin-tab--active" data-tab="venues" role="tab" aria-selected="true">
+                    <i class="fa-solid fa-store"></i> Locali
+                </button>
+                <button class="admin-tab" data-tab="drinks" role="tab" aria-selected="false">
+                    <i class="fa-solid fa-beer-mug-empty"></i> Drink
+                </button>
+            </div>
+
+            <div class="admin-drinks-toolbar hidden" id="admin-drinks-toolbar">
+                <div class="admin-search-wrap">
+                    <i class="fa-solid fa-magnifying-glass admin-search-icon"></i>
+                    <input id="admin-drink-search" class="admin-search-input" type="search"
+                           placeholder="Cerca drink per nome o categoria..." autocomplete="off">
+                </div>
+                <div class="admin-status-filters" role="group">
+                    <button class="admin-status-pill admin-status-pill--active" data-category="">Tutti</button>
+                    <button class="admin-status-pill" data-category="IPA">IPA</button>
+                    <button class="admin-status-pill" data-category="LAGER">Lager</button>
+                    <button class="admin-status-pill" data-category="STOUT">Stout</button>
+                    <button class="admin-status-pill" data-category="ALE">Ale</button>
+                    <button class="admin-status-pill" data-category="WHEAT">Wheat</button>
+                    <button class="admin-status-pill" data-category="SOUR">Sour</button>
+                </div>
+            </div>
         </div>
 
+        <!-- Tab: Locali + Recensioni -->
+        <div class="admin-tab-panel" id="admin-tab-venues">
         <div class="admin-two-col">
 
             <!-- COLONNA 1: lista locali -->
@@ -88,28 +119,36 @@
                 <div class="admin-review-list" id="admin-reviews" aria-live="polite"></div>
             </section>
 
-        </div>
+        </div><!-- /admin-two-col -->
+        </div><!-- /admin-tab-panel venues -->
+
+        <!-- Tab: Drink globali -->
+        <div class="admin-tab-panel hidden" id="admin-tab-drinks">
+            <div id="admin-drinks-list" aria-live="polite">
+                <p class="dashboard-message">Caricamento drink...</p>
+            </div>
+        </div><!-- /admin-tab-panel drinks -->
 
     </section>
 </main>
 
-<!-- Overlay -->
-<div class="admin-drawer-overlay" id="admin-drawer-overlay" aria-hidden="true"></div>
-
-<!-- Drawer: Nuovo drink -->
-<aside class="admin-drawer" id="admin-drink-drawer" role="dialog" aria-modal="true" aria-label="Nuovo drink globale">
-    <div class="admin-drawer-header">
-        <h2><i class="fa-solid fa-beer-mug-empty"></i> Nuovo drink</h2>
-        <button class="admin-drawer-close" id="admin-close-drawer" aria-label="Chiudi">
+<!-- Modal: nuovo drink -->
+<div class="admin-drink-create-backdrop hidden" id="admin-drink-create-backdrop" aria-hidden="true"></div>
+<section class="admin-drink-create-modal hidden" id="admin-drink-create-modal" role="dialog" aria-modal="true"
+         aria-labelledby="admin-create-drink-title">
+    <div class="admin-drink-modal-header">
+        <div>
+            <p class="eyebrow">Drink globale</p>
+            <h2 id="admin-create-drink-title"><i class="fa-solid fa-beer-mug-empty"></i> Nuovo drink</h2>
+        </div>
+        <button type="button" class="admin-modal-close" id="admin-close-create-drink" aria-label="Chiudi">
             <i class="fa-solid fa-xmark"></i>
         </button>
     </div>
-    <div class="admin-drawer-body">
-        <p class="dashboard-message" style="margin-bottom:10px;">Drink globali, disponibili a tutti i locali senza
-            prezzo.</p>
-        <p class="auth-message" id="admin-drink-message" aria-live="polite"></p>
 
-        <form class="auth-form" id="admin-drink-form">
+        <form class="auth-form admin-drink-modal-form" id="admin-drink-form">
+            <p class="dashboard-message">Drink globali, disponibili a tutti i locali senza prezzo.</p>
+            <p class="auth-message" id="admin-drink-message" aria-live="polite"></p>
             <label for="admin-drink-name">Nome</label>
             <input id="admin-drink-name" type="text" maxlength="100" required>
 
@@ -153,15 +192,88 @@
             </div>
             <input type="hidden" id="admin-drink-image-uri">
 
-            <button type="submit" class="auth-submit">
-                <i class="fa-solid fa-plus"></i> Crea drink
-            </button>
+            <div class="admin-drink-modal-actions">
+                <button type="button" class="secondary-button" id="admin-cancel-create-drink">Annulla</button>
+                <button type="submit" class="auth-submit">
+                    <i class="fa-solid fa-plus"></i> Crea drink
+                </button>
+            </div>
         </form>
-    </div>
-</aside>
+</section>
 
 <button type="button" class="theme-toggle-floating" id="theme-toggle" aria-label="Passa alla modalità notte"><i class="fa-solid fa-moon"></i></button>
   <script type="module" src="../js/theme-init.js"></script>
+<!-- Modal: modifica drink -->
+<div class="admin-drink-edit-backdrop hidden" id="admin-drink-edit-backdrop" aria-hidden="true"></div>
+<section class="admin-drink-edit-modal hidden" id="admin-drink-edit-modal" role="dialog" aria-modal="true"
+         aria-labelledby="admin-edit-drink-title">
+    <div class="admin-drink-edit-modal-header">
+        <div>
+            <p class="eyebrow">Drink globale</p>
+            <h2 id="admin-edit-drink-title"><i class="fa-solid fa-pen"></i> Modifica drink</h2>
+        </div>
+        <button type="button" class="admin-modal-close" id="admin-edit-drink-close" aria-label="Chiudi">
+            <i class="fa-solid fa-xmark"></i>
+        </button>
+    </div>
+
+    <form class="auth-form admin-drink-edit-modal-form" id="admin-drink-edit-form">
+        <input type="hidden" id="edit-drink-id">
+
+        <label for="edit-drink-name">Nome</label>
+        <input id="edit-drink-name" type="text" maxlength="100" required>
+
+        <label for="edit-drink-description">Descrizione</label>
+        <textarea id="edit-drink-description" rows="3" maxlength="300"></textarea>
+
+        <div class="form-columns">
+            <div>
+                <label for="edit-drink-category">Categoria</label>
+                <select id="edit-drink-category" required>
+                    <option value="IPA">IPA</option>
+                    <option value="LAGER">Lager</option>
+                    <option value="STOUT">Stout</option>
+                    <option value="ALE">Ale</option>
+                    <option value="WHEAT">Wheat</option>
+                    <option value="SOUR">Sour</option>
+                </select>
+            </div>
+            <div>
+                <label for="edit-drink-abv">ABV</label>
+                <input id="edit-drink-abv" type="number" step="0.1" min="0" max="100">
+            </div>
+        </div>
+
+        <label for="edit-drink-origin">Origine</label>
+        <input id="edit-drink-origin" type="text" maxlength="100">
+
+        <label for="edit-drink-image-file">Immagine birra</label>
+        <div class="upload-field" id="edit-drink-image-upload-field">
+            <input type="file" id="edit-drink-image-file" accept="image/jpeg,image/png,image/webp"
+                   class="upload-file-input">
+            <label for="edit-drink-image-file" class="upload-file-label">
+                <i class="fa-solid fa-arrow-up-from-bracket"></i>
+                <span id="edit-drink-image-filename">Scegli immagine (JPG, PNG, WEBP - max 5 MB)</span>
+            </label>
+            <img id="edit-drink-image-preview" class="upload-preview hidden" alt="Anteprima immagine birra">
+            <button type="button" class="upload-remove hidden" id="edit-drink-image-remove"
+                    aria-label="Rimuovi immagine">
+                <i class="fa-solid fa-xmark"></i> Rimuovi
+            </button>
+        </div>
+        <input type="hidden" id="edit-drink-image-uri">
+
+        <p class="profile-form-msg" id="admin-drink-edit-message" aria-live="polite"></p>
+
+        <div class="admin-drink-edit-modal-actions">
+            <button type="button" class="secondary-button" id="admin-edit-drink-cancel">Annulla</button>
+            <button type="submit" class="profile-save-btn">
+                <i class="fa-solid fa-check"></i> Salva modifiche
+            </button>
+        </div>
+    </form>
+</section>
+
 <script type="module" src="../js/admin-dashboard.js"></script>
 </body>
 

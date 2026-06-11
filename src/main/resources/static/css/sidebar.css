@@ -34,12 +34,11 @@
   gap:7px;
   border-radius:18px;
   font-weight:800;
-  transition:.25s;
+  transition:var(--button-transition);
 }
 .sidebar-item:hover,.sidebar-item.active{
-  background:linear-gradient(135deg,var(--amber),var(--amber-2));
-  color:#2d1900;
-  transform:translateY(-2px);
+  background:var(--action-amber-bg);
+  color:var(--action-text);
 }
 .sidebar-item i{font-size:23px}
 .sidebar-item span{font-size:12px}
@@ -84,11 +83,11 @@
   box-shadow:0 14px 35px rgba(0,0,0,.14);
   backdrop-filter:blur(10px);
   scrollbar-width:thin;
-  scrollbar-color:rgba(21,79,31,.45) transparent;
+  scrollbar-color:var(--scrollbar-thumb) var(--scrollbar-track);
 }
 
 .favorites-panel::-webkit-scrollbar{
-  width:8px;
+  width:var(--scrollbar-size);
 }
 
 .favorites-panel::-webkit-scrollbar-button{
@@ -98,8 +97,15 @@
 }
 
 .favorites-panel::-webkit-scrollbar-thumb{
+  border:2px solid transparent;
   border-radius:999px;
-  background:rgba(21,79,31,.42);
+  background:var(--scrollbar-thumb);
+  background-clip:padding-box;
+}
+
+.favorites-panel::-webkit-scrollbar-thumb:hover{
+  background:var(--scrollbar-thumb-hover);
+  background-clip:padding-box;
 }
 
 .favorites-panel h3{
@@ -130,7 +136,7 @@
   background:#fffaf2;
   color:var(--text);
   text-align:left;
-  transition:.2s;
+  transition:var(--button-transition);
 }
 
 .favorite-panel-card:hover{
@@ -177,13 +183,12 @@
   border-radius:999px;
   background:#fff3d8;
   color:var(--green);
-  transition:.2s;
+  transition:var(--button-transition);
 }
 
 .favorite-panel-actions button:hover{
-  background:linear-gradient(135deg,var(--amber),var(--amber-2));
-  color:#2d1900;
-  transform:translateY(-1px);
+  background:var(--action-amber-bg);
+  color:var(--action-text);
 }
 
 /* Su mobile la sidebar diventa una barra inferiore. */

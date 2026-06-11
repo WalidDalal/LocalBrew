@@ -1,8 +1,0 @@
-[phases.setup]
-nixPkgs = ["jdk17", "maven"]
-
-[phases.build]
-cmds = ["mvn clean install -DskipTests"]
-
-[start]
-cmd = "java -jar target/LocalBrew-0.0.1-SNAPSHOT.jar"

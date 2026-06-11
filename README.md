@@ -1,11 +1,10 @@
 # LocalBrew
 
 ## Autori
-
+- [Walid](https://github.com/WalidDalal)
 - [Eva](https://github.com/evamicadeva)
 - [Stefano](https://github.com/ste-riiba)
 - [Gabriel](https://github.com/GabriR02)
-- [Walid](https://github.com/WalidDalal)
 - [Dario](https://github.com/Thario02)
 
 LocalBrew è una web application full-stack per la scoperta e la gestione di locali, pub e birrifici artigianali.
